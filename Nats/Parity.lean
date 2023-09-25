@@ -1,6 +1,7 @@
 import Nats.Basic
 import Nats.Addition
 import Nats.Multiplication
+import Nats.Logic
 import Mathlib.Tactic.LeftRight
 --------------------------------------------------------------------------------
 open nat
@@ -10,8 +11,8 @@ open Multiplication
 namespace Parity
 --------------------------------------------------------------------------------
 
-def is_even (n : nat) := ∃ k, 2*k = n
-def is_odd (n : nat) := ∃ k, succ (2*k) = n
+def is_even (n : nat) := ∃ k, k+k = n
+def is_odd (n : nat) := ∃ k, succ (k+k) = n
 
 example : is_even 0 := by
   rw [is_even]
@@ -47,65 +48,75 @@ theorem odd_is_succ_even (n : nat) : is_odd (succ n) -> is_even n := by
   apply Exists.elim ha $ λ w => by
     intro hb
     rw [succ_inj_iff] at hb
-    rw [<- hb]
-    sorry
+    exact ⟨w, hb⟩ 
 
-theorem succ_odd_is_even (n : nat) : is_odd n -> is_even (succ n) := by
-  sorry
+theorem odd_or_even (n : nat) : is_even n ↔ is_odd (succ n) := by
+  exact ⟨succ_even_is_odd n, odd_is_succ_even n⟩ 
 
-theorem two_n_is_even (n : nat) : is_even (2*n) := by
+theorem two_n_is_even (n : nat) : is_even (n+n) := by
   exact ⟨n, rfl⟩ 
 
-theorem existential_negation {p : x -> Prop} : (¬ ∃ x, p x) ↔ (∀ x, ¬ p x) := by
-  have pa : (¬ ∃ x, p x) -> (∀ x, ¬ p x) := by
-    intro ha w hb
-    apply ha
-    exact ⟨w, hb⟩
+theorem two_n_is_not_odd (n : nat) : ¬ is_odd (n+n) := by
+  have i : is_even (n+n) := two_n_is_even n
+  sorry
 
-  have pb : (∀ x, ¬ p x) -> (¬ ∃ x, p x) := by
-    intro ha hb
-    apply Exists.elim hb $ λ w => by
-      exact ha w
+theorem succ_two_n_is_odd (n : nat) : is_odd (succ (n+n)) := by
+  exact ⟨n, rfl⟩ 
 
-  exact ⟨pa, pb⟩ 
+theorem eq_is_same_parity (a b : nat)
+    : a = b -> (is_even a ∧ is_even b) ∨ (is_odd a ∧ is_odd b) := by
+  intro ha
+  sorry
 
-theorem even_is_not_odd (n : nat) : is_even n -> ¬ is_odd n := by
+theorem zero_is_not_odd : ¬ is_odd (0 : nat) := by
+  intro h
+  rw [is_odd] at h
+  exact Exists.elim h $ λ w => by
+    exact succ_ne_zero _
+
+theorem succ_even_is_not_even (n : nat) : is_even n -> ¬ is_even (succ n) := by
   intro ha
   induction n with
   | zero =>
-    rw [is_odd, existential_negation]
-    intro x
-    rw [<- Ne]
-    exact succ_ne_zero _
-  | succ d ih =>
-    rw [is_odd, existential_negation]
-    intro x
-    intro h
-    rw [succ_inj_iff] at h
-    apply ih
-    rw [<- h]
-    have d_is_even : is_even d := by
-      rw [<- h]
-      exact two_n_is_even _
-    exact two_n_is_even _
+    intro hb
     sorry
+  | succ d ih =>
+    sorry
+
+theorem even_and_odd (n : nat) : ¬ (is_even n ∧ is_odd n) := by
+  intro ⟨p, q⟩ 
+  induction n with
+  | zero =>
+    apply zero_is_not_odd
+    exact q
+  | succ d ih =>
+    have q' : is_even d := odd_is_succ_even d q
+    have p' : is_odd d := sorry
+    sorry
+
+theorem even_is_not_odd (n : nat) : is_even n -> ¬ is_odd n := by
+  intro ha hb
+  apply Exists.elim ha $ λ r => by
+    intro h
+    sorry
+
+theorem two_mul (n : nat) : 2*n = n+n := by
+  have two_eq_succ_succ : 2 = succ (succ zero) := by
+    rfl
+  rw [two_eq_succ_succ, succ_mul, succ_mul, zero_is_0, zero_mul, zero_add]
       
-    
-
-
 theorem even_ne_odd (a b : nat) : is_even a ∧ is_odd b -> a ≠ b := by
   intro ⟨p, q⟩ 
-  rw [is_even] at p
-  rw [is_odd] at q
-  sorry
+  intro h
+  induction b generalizing a with
+  | zero =>
+    sorry
+  | succ d ih =>
+    sorry
 
 example : ∀ k, succ (2*k) ≠ 0 := by
   intro k
   exact succ_ne_zero _
-
--- ¬∃ k, P(n)
--- ∀ k, ¬P(n)
-
 
 theorem even_or_odd : ∀ n, is_even n ∨ is_odd n := by
   intro n
@@ -114,34 +125,24 @@ theorem even_or_odd : ∀ n, is_even n ∨ is_odd n := by
     left
     exact zero_is_even
   | succ d ih =>
-    sorry
-
+    cases ih with
+    | inl hl =>
+      right
+      exact succ_even_is_odd d hl
+    | inr hr =>
+      left
+      sorry
+      /- exact succ_odd_is_even d hr -/
 
 theorem parity_boolean (n : nat) : ¬ is_even n ↔ is_odd n := by
   have p : ¬ is_even n -> is_odd n := by
-    rw [Not]
-    intro h
-    induction n with
-    | zero =>
-      apply False.elim
-      exact h zero_is_even
-    | succ d ih =>
-      apply False.elim
-      apply h
-      rw [is_even]
-      sorry
-        
-        
-      
+    sorry
   have q : is_odd n -> ¬ is_even n := by
     sorry
   exact ⟨p, q⟩ 
 
-theorem succ_odd_is_even (n : nat) : is_odd n -> is_even (succ n) := by
-  sorry
-
 theorem parity_alternation (n : nat) : is_even n ↔ is_odd (succ n) := by
-  sorry
+  exact ⟨succ_even_is_odd n, odd_is_succ_even n⟩ 
 
 /- theorem succ_parity (n : nat) : is_even n ↔ ¬ is_even (succ n) := by -/
 /-   constructor -/
@@ -158,8 +159,8 @@ variable (α : Type) (p q : α → Prop)
 
 example (h : ∃ x, p x ∧ q x) : ∃ x, q x ∧ p x :=
   Exists.elim h
-    (fun w =>
-     fun hw : p w ∧ q w =>
+    (λ w =>
+     λ hw : p w ∧ q w =>
      show ∃ x, q x ∧ p x from ⟨w, hw.right, hw.left⟩)
 
 /- theorem even_mul_even_is_even (a b : nat) : is_even a ∧ is_even b -> is_even (a*b) := by -/
