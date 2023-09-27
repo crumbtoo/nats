@@ -81,6 +81,54 @@ theorem odd_is_succ_even (n : nat) : is_odd (succ n) -> is_even n := by
     rw [succ_inj_iff] at hb
     exact ⟨w, hb⟩ 
 
+theorem even_or_odd : ∀ n : nat, is_even n ∨ is_odd n := by
+  intro n
+  induction n with
+  | zero =>
+    left
+    exact zero_is_even
+  | succ d ih =>
+    cases ih with
+    | inl hl =>
+      right
+      exact succ_even_is_odd d hl
+    | inr hr =>
+      left
+      apply Exists.elim hr $ λ w => by
+        intro _
+        exact succ_odd_is_even d hr
+
+theorem even_sub_2_is_even (n : nat)
+    : is_even (succ (succ n)) -> is_even n := by
+  intro ha
+  cases even_or_odd n with
+  | inl hl =>
+    exact hl
+  | inr hr =>
+    induction n with
+    | zero =>
+      exact zero_is_even
+    | succ d ih =>
+      have i : is_even (succ (succ d)) :=
+        succ_odd_is_even (succ d) hr
+      sorry
+    
+  
+/- theorem even_sub_2_is_even (n : nat) -/
+/-     : is_even (succ (succ n)) -> is_even n := by -/
+/-   intro ha -/
+/-   have i : is_odd (succ n) := by -/
+/-     cases even_or_odd n with -/
+/-     | inl hl => -/
+/-       exact succ_even_is_odd n hl -/
+/-     | inr hr => -/
+/-       cases even_or_odd n with -/
+/-       | inl hl₂ => -/
+/-         exact succ_even_is_odd n hl₂ -/
+/-       | inr hr₂ => -/
+        
+/-   sorry -/
+
 theorem even_is_succ_odd (n : nat) : is_even (succ n) -> is_odd n := by
   intro ha
   induction n with
@@ -89,6 +137,7 @@ theorem even_is_succ_odd (n : nat) : is_even (succ n) -> is_odd n := by
     apply one_is_not_even
     exact ha
   | succ d ih =>
+    apply succ_even_is_odd
     sorry
 
 theorem succ_even_is_not_even (n : nat) : is_even n -> ¬ is_even (succ n) := by
@@ -114,9 +163,6 @@ theorem succ_even_is_not_even (n : nat) : is_even n -> ¬ is_even (succ n) := by
       sorry
     sorry
 
-/- theorem even_or_odd (n : nat) : is_even n ↔ is_odd (succ n) := by -/
-/-   exact ⟨succ_even_is_odd n, odd_is_succ_even n⟩ -/ 
-
 theorem two_n_is_even (n : nat) : is_even (n+n) := by
   exact ⟨n, rfl⟩ 
 
@@ -128,11 +174,18 @@ theorem two_n_is_not_odd (n : nat) : ¬ is_odd (n+n) := by
   have i : is_even (n+n) := two_n_is_even n
   induction n with
   | zero =>
-    intro h
-    sorry
+    intro ha
+    apply Exists.elim ha $ λ w => by
+      intro hb
+      apply succ_ne_zero (w+w)
+      exact hb
   | succ d ih =>
-    sorry
-
+    rw [add_succ, succ_add]
+    intro ha
+    apply Exists.elim ha $ λ w => by
+      intro hb
+      rw [succ_inj_iff] at hb
+      sorry
 
 theorem succ_two_n_is_odd (n : nat) : is_odd (succ (n+n)) := by
   exact ⟨n, rfl⟩ 
@@ -159,16 +212,6 @@ theorem even_and_odd (n : nat) : ¬ (is_even n ∧ is_odd n) := by
     have p' : is_odd d := sorry
     sorry
 
-theorem even_is_not_odd (n : nat) : is_even n -> ¬ is_odd n := by
-  intro ha hb
-  induction n with
-  | zero =>
-    apply zero_is_not_odd
-    rw [zero_is_0] at hb
-    exact hb
-  | succ d ih =>
-    sorry
-
 theorem two_mul (n : nat) : 2*n = n+n := by
   have two_eq_succ_succ : 2 = succ (succ zero) := by
     rfl
@@ -179,45 +222,34 @@ theorem even_ne_odd (a b : nat) : is_even a ∧ is_odd b -> a ≠ b := by
   intro h
   induction b generalizing a with
   | zero =>
-    sorry
+    exact zero_is_not_odd q
   | succ d ih =>
-    sorry
+    rw [h] at p
+    have p' : is_odd d := even_is_succ_odd d p
+    have q' : is_even d := odd_is_succ_even d q
+    apply ih d q' p'
+    rfl
+
+theorem even_is_not_odd (n : nat) : is_even n -> ¬ is_odd n := by
+  intro ha hb
+  apply even_ne_odd n n ⟨ha, hb⟩ 
+  rfl
+
+/- theorem even_is_not_odd (n : nat) : is_even n -> ¬ is_odd n := by -/
+/-   intro ha hb -/
+/-   induction n with -/
+/-   | zero => -/
+/-     apply zero_is_not_odd -/
+/-     rw [zero_is_0] at hb -/
+/-     exact hb -/
+/-   | succ d ih => -/
+/-     have p : is_even d := odd_is_succ_even d hb -/
+/-     have q : is_odd d := even_is_succ_odd d ha -/
+/-     exact ih p q -/
 
 example : ∀ k, succ (2*k) ≠ 0 := by
   intro k
   exact succ_ne_zero _
-
-theorem even_or_odd : ∀ n : nat, is_even n ∨ is_odd n := by
-  intro n
-  induction n with
-  | zero =>
-    left
-    exact zero_is_even
-  | succ d ih =>
-    cases ih with
-    | inl hl =>
-      right
-      exact succ_even_is_odd d hl
-    | inr hr =>
-      left
-      apply Exists.elim hr $ λ w => by
-        intro _
-        exact succ_odd_is_even d hr
-
-theorem even_sub_2_is_even (n : nat)
-    : is_even (succ (succ n)) -> is_even n := by
-  intro ha
-  have i : is_odd (succ n) := by
-    cases even_or_odd n with
-    | inl hl =>
-      exact succ_even_is_odd n hl
-    | inr hr =>
-      cases even_or_odd n with
-      | inl hl₂ =>
-        exact succ_even_is_odd n hl₂
-      | inr hr₂ =>
-        sorry
-  sorry
 
 theorem parity_boolean (n : nat) : ¬ is_even n ↔ is_odd n := by
   have p : ¬ is_even n -> is_odd n := by
