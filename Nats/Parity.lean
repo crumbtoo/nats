@@ -5,6 +5,7 @@ import Nats.Logic
 import Mathlib.Tactic.LeftRight
 import Mathlib.Tactic.Use
 import Mathlib.Tactic.ExistsI
+import Mathlib.Tactic.Contrapose
 import Std.Tactic.Basic
 --------------------------------------------------------------------------------
 open nat
@@ -133,38 +134,85 @@ theorem succ_n_add_n_is_odd (k : nat) (ha : n = succ (k + k)) : is_odd n := by
 
 theorem n_add_n_is_not_odd (n : nat) : n + n = k -> ¬ is_odd k := by
   intro ha
+  induction k generalizing n with
+  | zero =>
+    exact zero_is_not_odd
+  | succ d ih =>
+    intro hb
+    apply Exists.elim hb $ λ w => by
+      intro hc
+      rw [succ_inj_iff] at hc
+      apply ih w hc
+      cases n with
+      | zero =>
+        rw [zero_is_0, add_zero] at ha
+        exfalso
+        exact succ_ne_zero _ (Eq.symm ha)
+      | succ e =>
+        rw [add_succ, succ_add, succ_inj_iff] at ha
+        exact ⟨e, ha⟩ 
+
+theorem even_is_succ_odd (n : nat) : is_even (succ n) -> is_odd n := by
+  contrapose
+  have i := succ_odd_is_even n
+  sorry
+
+theorem even_and_odd (n : nat) : ¬ (is_even n ∧ is_odd n) := by
+  intro ⟨ha, hb⟩ 
   induction n with
   | zero =>
-    rw [zero_is_0, add_zero] at ha
-    cases k with
-    | zero =>
-      exact zero_is_not_odd
-    | succ d =>
-      exfalso
-      apply succ_ne_zero d
-      exact Eq.symm ha
+    exact zero_is_not_odd hb
   | succ d ih =>
-    rw [succ_add, add_succ] at ha
-    cases k with
-    | zero =>
-      exact zero_is_not_odd
-    | succ e =>
-      have i : is_odd e := by
-        rw [succ_inj_iff] at ha
-        exact succ_n_add_n_is_odd d (Eq.symm ha)
-      apply ih
-      sorry
+    have i := odd_is_succ_even _ hb
+    have j : is_odd d := by
+      apply Exists.elim ha $ λ w => by
+        intro hc
+        cases w with
+        | zero =>
+          exfalso
+          exact succ_ne_zero _ (Eq.symm hc)
+        | succ e =>
+          rw [add_succ, succ_add, succ_inj_iff] at hc
+          exact succ_n_add_n_is_odd _ (Eq.symm hc)
+    exact ih i j
+
+theorem succ_n_add_n_is_not_even (n : nat)
+    : succ (n + n) = k -> ¬ is_even k := by
+  intro ha
+  induction k generalizing n with
+  | zero =>
+    exfalso
+    exact succ_ne_zero _ ha
+  | succ d ih =>
+    intro hb
+    apply Exists.elim hb $ λ w => by
+      intro hc
+      cases n with
+      | zero =>
+        rw [zero_is_0, add_zero, succ_inj_iff] at ha
+        rw [<- ha] at hb
+        apply one_is_not_even
+        exact hb
+      | succ e =>
+        have i : ¬ is_even d := by
+          sorry
+        sorry
 
 theorem _even_is_not_odd (n : nat) : is_even n -> ¬ is_odd n := by
   intro ha
   cases even_or_odd n with
   | inl hl =>
     intro hb
-    apply Exists.elim ha $ λ r => by
+    apply Exists.elim ha $ λ w => by
+      intro hc
+      have i := n_add_n_is_not_odd w hc
+      contradiction
+  | inr hr =>
+    intro hb
+    apply Exists.elim hb $ λ w => by
       intro hc
       sorry
-  | inr hr =>
-    sorry
+
 
 /- theorem _even_is_not_odd (n : nat) : is_even n -> ¬ is_odd n := by -/
 /-   induction n with -/
@@ -208,10 +256,9 @@ theorem even_sub_2_is_even (n : nat)
         
 /-   sorry -/
 
-theorem even_is_succ_odd (n : nat) : is_even (succ n) -> is_odd n := by
-  intro ha
-  apply Classical.byContradiction $ λ hb => by
-    sorry
+  
+
+
 
 theorem even_ne_odd (a b : nat) : is_even a ∧ is_odd b -> a ≠ b := by
   intro ⟨p, q⟩ 
@@ -281,16 +328,16 @@ theorem eq_is_same_parity (a b : nat)
   intro ha
   sorry
 
-theorem even_and_odd (n : nat) : ¬ (is_even n ∧ is_odd n) := by
-  intro ⟨p, q⟩ 
-  induction n with
-  | zero =>
-    apply zero_is_not_odd
-    exact q
-  | succ d ih =>
-    have q' : is_even d := odd_is_succ_even d q
-    have p' : is_odd d := sorry
-    sorry
+/- theorem even_and_odd (n : nat) : ¬ (is_even n ∧ is_odd n) := by -/
+/-   intro ⟨p, q⟩ -/ 
+/-   induction n with -/
+/-   | zero => -/
+/-     apply zero_is_not_odd -/
+/-     exact q -/
+/-   | succ d ih => -/
+/-     have q' : is_even d := odd_is_succ_even d q -/
+/-     have p' : is_odd d := sorry -/
+/-     sorry -/
 
 theorem two_mul (n : nat) : 2*n = n+n := by
   have two_eq_succ_succ : 2 = succ (succ zero) := by
