@@ -56,3 +56,32 @@ theorem add_succ_ne_zero (a : nat) : succ a + n ≠ 0 := by
   rw [succ_add]
   exact succ_ne_zero _
 
+theorem n_ne_succ_n (n : nat) : n ≠ succ n := by
+  induction n with
+  | zero =>
+    apply Ne.symm
+    exact succ_ne_zero _
+  | succ d ih =>
+    intro ha
+    rw [succ_inj_iff] at ha
+    contradiction
+
+theorem n_add_succ_ne_n (n : nat) : n + succ k ≠ n := by
+  induction n generalizing k with
+  | zero =>
+    rw [zero_is_0, add_succ]
+    exact succ_ne_zero _
+  | succ d ih =>
+    intro ha
+    rw [succ_add, add_succ, succ_inj_iff] at ha
+    cases k with
+    | zero =>
+      rw [zero_is_0, add_zero] at ha
+      apply n_ne_succ_n d
+      exact Eq.symm ha
+    | succ e =>
+      rw [<- add_succ] at ha
+      have i : d + succ (succ e) ≠ d := by
+        exact ih
+      contradiction
+

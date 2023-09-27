@@ -32,6 +32,12 @@ theorem zero_is_even : is_even 0 := by
   have h : ((0 : nat) = 2*0) := by rfl
   exact ⟨0, h⟩ 
 
+theorem zero_is_not_odd : ¬ is_odd (0 : nat) := by
+  intro h
+  rw [is_odd] at h
+  exact Exists.elim h $ λ w => by
+    exact succ_ne_zero _
+
 theorem one_is_odd : is_odd 1 := by
   rw [is_odd]
   have h : ((1 : nat) = 2*0+1) := by rfl
@@ -98,6 +104,83 @@ theorem even_or_odd : ∀ n : nat, is_even n ∨ is_odd n := by
         intro _
         exact succ_odd_is_even d hr
 
+theorem odd_add_odd_is_even (a b : nat)
+    : is_odd a ∧ is_odd b -> is_even (a + b) := by
+  intro ⟨p, q⟩ 
+  sorry
+
+theorem succ_odd_is_not_odd (n : nat) : is_odd n -> ¬ is_odd (succ n) := by
+  intro ha
+  induction n with
+  | zero =>
+    intro hb
+    exact zero_is_not_odd ha
+  | succ d ih =>
+    intro hb
+    cases even_or_odd d with
+    | inl hl =>
+      have i : is_even (succ (succ d)) := by
+        have hi := succ_even_is_odd d hl
+        exact succ_odd_is_even (succ d) hi
+      sorry
+    | inr hr =>
+      sorry
+
+theorem succ_n_add_n_is_odd (k : nat) (ha : n = succ (k + k)) : is_odd n := by
+  use k
+  apply Eq.symm
+  exact ha
+
+theorem n_add_n_is_not_odd (n : nat) : n + n = k -> ¬ is_odd k := by
+  intro ha
+  induction n with
+  | zero =>
+    rw [zero_is_0, add_zero] at ha
+    cases k with
+    | zero =>
+      exact zero_is_not_odd
+    | succ d =>
+      exfalso
+      apply succ_ne_zero d
+      exact Eq.symm ha
+  | succ d ih =>
+    rw [succ_add, add_succ] at ha
+    cases k with
+    | zero =>
+      exact zero_is_not_odd
+    | succ e =>
+      have i : is_odd e := by
+        rw [succ_inj_iff] at ha
+        exact succ_n_add_n_is_odd d (Eq.symm ha)
+      apply ih
+      sorry
+
+theorem _even_is_not_odd (n : nat) : is_even n -> ¬ is_odd n := by
+  intro ha
+  cases even_or_odd n with
+  | inl hl =>
+    intro hb
+    apply Exists.elim ha $ λ r => by
+      intro hc
+      sorry
+  | inr hr =>
+    sorry
+
+/- theorem _even_is_not_odd (n : nat) : is_even n -> ¬ is_odd n := by -/
+/-   induction n with -/
+/-   | zero => -/
+/-     intro ha -/
+/-     exact zero_is_not_odd -/
+/-   | succ d ih => -/
+/-     intro ha -/
+/-     cases even_or_odd (succ d) with -/
+/-     | inl hr => -/
+/-       intro hb -/
+/-       have i : is_even d := odd_is_succ_even d hb -/
+/-       sorry -/
+/-     | inr hr => -/
+/-       sorry -/
+
 theorem even_sub_2_is_even (n : nat)
     : is_even (succ (succ n)) -> is_even n := by
   intro ha
@@ -105,15 +188,11 @@ theorem even_sub_2_is_even (n : nat)
   | inl hl =>
     exact hl
   | inr hr =>
-    induction n with
-    | zero =>
-      exact zero_is_even
-    | succ d ih =>
-      have i : is_even (succ (succ d)) :=
-        succ_odd_is_even (succ d) hr
+    apply Exists.elim hr $ λ w => by
+      intro hb
+      have i : is_even (succ n) := succ_odd_is_even n hr
       sorry
-    
-  
+
 /- theorem even_sub_2_is_even (n : nat) -/
 /-     : is_even (succ (succ n)) -> is_even n := by -/
 /-   intro ha -/
@@ -131,14 +210,21 @@ theorem even_sub_2_is_even (n : nat)
 
 theorem even_is_succ_odd (n : nat) : is_even (succ n) -> is_odd n := by
   intro ha
-  induction n with
-  | zero =>
-    exfalso
-    apply one_is_not_even
-    exact ha
-  | succ d ih =>
-    apply succ_even_is_odd
+  apply Classical.byContradiction $ λ hb => by
     sorry
+
+theorem even_ne_odd (a b : nat) : is_even a ∧ is_odd b -> a ≠ b := by
+  intro ⟨p, q⟩ 
+  intro h
+  induction b generalizing a with
+  | zero =>
+    exact zero_is_not_odd q
+  | succ d ih =>
+    rw [h] at p
+    have p' : is_odd d := even_is_succ_odd d p
+    have q' : is_even d := odd_is_succ_even d q
+    apply ih d q' p'
+    rfl
 
 theorem succ_even_is_not_even (n : nat) : is_even n -> ¬ is_even (succ n) := by
   intro ha
@@ -195,12 +281,6 @@ theorem eq_is_same_parity (a b : nat)
   intro ha
   sorry
 
-theorem zero_is_not_odd : ¬ is_odd (0 : nat) := by
-  intro h
-  rw [is_odd] at h
-  exact Exists.elim h $ λ w => by
-    exact succ_ne_zero _
-
 theorem even_and_odd (n : nat) : ¬ (is_even n ∧ is_odd n) := by
   intro ⟨p, q⟩ 
   induction n with
@@ -216,19 +296,6 @@ theorem two_mul (n : nat) : 2*n = n+n := by
   have two_eq_succ_succ : 2 = succ (succ zero) := by
     rfl
   rw [two_eq_succ_succ, succ_mul, succ_mul, zero_is_0, zero_mul, zero_add]
-      
-theorem even_ne_odd (a b : nat) : is_even a ∧ is_odd b -> a ≠ b := by
-  intro ⟨p, q⟩ 
-  intro h
-  induction b generalizing a with
-  | zero =>
-    exact zero_is_not_odd q
-  | succ d ih =>
-    rw [h] at p
-    have p' : is_odd d := even_is_succ_odd d p
-    have q' : is_even d := odd_is_succ_even d q
-    apply ih d q' p'
-    rfl
 
 theorem even_is_not_odd (n : nat) : is_even n -> ¬ is_odd n := by
   intro ha hb
