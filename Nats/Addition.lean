@@ -19,11 +19,13 @@ theorem succ_add (a b : nat) : succ a + b = succ (a + b) := by
   | zero      => rw [zero_is_0, add_zero, add_zero]
   | succ d ih => rw [add_succ, ih, <- add_succ]
 
+@[simp]
 theorem add_comm (a b : nat) : a + b = b + a := by
   induction b with
   | zero      => rw [zero_is_0, add_zero, zero_add]
   | succ d ih => rw [add_succ, succ_add, ih]
 
+@[simp]
 theorem add_assoc (a b c : nat) : (a + b) + c = a + (b + c) := by
   induction c with
   | zero      => rw [zero_is_0, add_zero, add_zero]
@@ -33,6 +35,7 @@ theorem succ_eq_add_one (a : nat) : succ a = a + 1 := by
   have h : 1 = succ 0 := by rfl
   rw [h, add_succ, add_zero]
 
+@[simp]
 theorem add_right_comm (a b c : nat) : a + (b + c) = b + (a + c) := by
   rw [<- add_assoc, <- add_assoc, add_comm b a]
 
