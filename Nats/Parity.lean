@@ -222,6 +222,12 @@ theorem eq_is_same_parity (a b : nat)
     right
     exact ⟨hr, hr⟩ 
 
+theorem pred_even_is_odd (n : nat) : is_even (succ n) ↔ is_odd n := by
+  exact ⟨even_is_succ_odd n, succ_odd_is_even n⟩ 
+
+theorem pred_odd_is_even (n : nat) : is_odd (succ n) ↔ is_even n := by
+  exact ⟨odd_is_succ_even n, succ_even_is_odd n⟩ 
+
 --------------------------------------------------------------------------------
 
 theorem even_add_even_is_even (a b : nat)
@@ -245,4 +251,18 @@ theorem even_add_even_is_even (a b : nat)
           use (r+s)
           rw [<- hc, <- hd]
           simp
+
+theorem even_add_odd_is_odd (a b : nat)
+    : is_even a ∧ is_odd b -> is_odd (a+b) := by
+  intro ⟨ha, hb⟩ 
+  cases b with
+  | zero =>
+    exfalso
+    exact zero_is_not_odd hb
+  | succ d =>
+    rw [add_succ]
+    apply even_is_succ_odd
+    have i : is_even d := odd_is_succ_even _ hb
+    rw [pred_even_is_odd, pred_odd_is_even]
+    exact even_add_even_is_even _ _ ⟨ha, i⟩ 
 

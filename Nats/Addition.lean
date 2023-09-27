@@ -5,10 +5,12 @@ open nat.nat
 namespace Addition
 --------------------------------------------------------------------------------
 
+@[simp]
 theorem add_zero (a : nat) : a + 0 = a := by rfl
 
 theorem add_succ (a b : nat) : a + succ b = succ (a + b) := by rfl
 
+@[simp]
 theorem zero_add (a : nat) : 0 + a = a := by
   induction a with
   | zero      => rfl
