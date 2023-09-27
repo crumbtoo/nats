@@ -4,7 +4,6 @@ import Nats.Multiplication
 import Nats.Logic
 import Mathlib.Tactic.LeftRight
 import Mathlib.Tactic.Use
-import Mathlib.Tactic.ExistsI
 import Mathlib.Tactic.Contrapose
 import Std.Tactic.Basic
 --------------------------------------------------------------------------------
