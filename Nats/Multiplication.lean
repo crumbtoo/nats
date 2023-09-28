@@ -1,6 +1,7 @@
 import Nats.Addition
 import Nats.Basic
 import Mathlib.Tactic.LeftRight
+import Mathlib.Tactic.Contrapose
 --------------------------------------------------------------------------------
 open nat
 open nat.nat
@@ -45,6 +46,13 @@ theorem mul_left_distrib (a b c : nat) : a * (b + c) = (a*b + a*c) := by
   | zero      => rw [zero_is_0, add_zero, mul_zero, add_zero]
   | succ d ih => rw [add_succ, mul_succ, ih, mul_succ, add_right_comm (a*b) _]
 
+theorem mul_assoc (a b c : nat) : a * (b * c) = a * b * c := by
+  induction c with
+  | zero =>
+    rw [zero_is_0, mul_zero, mul_zero, mul_zero]
+  | succ d ih =>
+    rw [mul_succ, mul_succ, mul_left_distrib, ih]
+
 theorem succ_mul_succ_ne_zero : succ a * succ b ≠ 0 := by
   rw [mul_succ, succ_add]
   exact succ_ne_zero _
@@ -84,8 +92,8 @@ theorem mul_left_uncancel {a b : nat} (n : nat) : a = b -> n*a = n*b := by
   | succ d ih =>
     rw [succ_mul, succ_mul, ih, h]
 
-theorem mul_left_cancel {n a b : nat} : n ≠ 0 -> n*a = n*b -> a = b := by
-  intro ha hb
+theorem mul_left_cancel {n a b : nat} {ha : n ≠ 0}: n*a = n*b -> a = b := by
+  intro hb
   induction b generalizing a with
   | zero =>
     rw [zero_is_0]
@@ -114,5 +122,54 @@ theorem mul_left_cancel {n a b : nat} : n ≠ 0 -> n*a = n*b -> a = b := by
       rw [succ_inj_iff]
       exact ih hb
 
+theorem nz_mul_nz (a b : nat) : a ≠ 0 ∧ b ≠ 0 -> a*b ≠ 0 := by
+  intro ⟨p, q⟩ ha
+  rw [mul_zero_factor_iff] at ha
+  cases ha with
+  | inl hl =>
+    apply p
+    exact hl
+  | inr hr =>
+    apply q
+    exact hr
+
 --------------------------------------------------------------------------------
+
+def pow : nat -> nat -> nat
+| _, 0      => 1
+| n, succ k => n * (pow n k)
+
+instance : Pow nat nat where
+  pow := Multiplication.pow
+
+theorem pow_zero (n : nat) : n ^ 0 = 1 := by rfl
+
+theorem pow_succ (n k : nat) : n ^ (succ k) = n * (n^k) := by rfl
+
+theorem zero_pow_succ (n : nat) : 0 ^ (succ n) = 0 := by
+  rw [pow_succ, zero_mul]
+
+theorem pow_one (n : nat) : n ^ 1 = n := by rfl
+
+theorem one_pow (n : nat) : 1 ^ n = 1 := by
+  induction n with
+  | zero =>
+    rw [zero_is_0, pow_zero]
+  | succ d ih =>
+    rw [pow_succ, one_mul]
+    exact ih
+
+theorem pow_add (a r s : nat) : a^(r+s) = a^r * a^s := by
+  induction s with
+  | zero =>
+    rw [zero_is_0, add_zero, pow_zero, mul_one]
+  | succ d ih =>
+    rw [add_succ, pow_succ, pow_succ, mul_assoc, mul_comm (a^r), ih, mul_assoc]
+
+theorem pow_mul (a m n : nat) : a^(m*n) = (a^m)^n := by
+  induction n with
+  | zero =>
+    rw [zero_is_0, mul_zero, pow_zero, pow_zero]
+  | succ d ih =>
+    rw [pow_succ, <- ih, mul_succ, <- pow_add]
 
