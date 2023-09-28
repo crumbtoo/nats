@@ -1,4 +1,5 @@
 import Nats.Basic
+import Nats.Multiplication
 namespace TriangleNumbers
 open nat
 open nat.nat
@@ -10,6 +11,6 @@ def T : nat -> nat
 
 --------------------------------------------------------------------------------
 
-/- theorem t_eq_polynomial (n : nat) : T n = (n^2 + n) / 2 := by -/
-/-   sorry -/
+theorem t_eq_polynomial (n : nat) : T n = (n^2 + n) / 2 := by
+  sorry
 

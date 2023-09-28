@@ -7,8 +7,8 @@ import Mathlib.Tactic.Use
 import Mathlib.Tactic.Contrapose
 import Std.Tactic.Basic
 --------------------------------------------------------------------------------
-open nat
-open nat.nat
+open Basic
+open Basic.nat
 open Addition
 open Multiplication
 namespace Parity

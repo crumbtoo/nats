@@ -1,4 +1,4 @@
-namespace nat
+namespace Basic
 --------------------------------------------------------------------------------
 
 inductive nat : Type
@@ -31,14 +31,14 @@ def add : nat -> nat -> nat
 | a, succ b => succ (add a b)
 
 instance : Add nat where
-  add := nat.add
+  add := Basic.add
 
 def mul : nat -> nat -> nat
 | _, 0      => 0
 | a, succ b => a + (mul a b)
 
 instance : Mul nat where
-  mul := nat.mul
+  mul := Basic.mul
 
 --------------------------------------------------------------------------------
 

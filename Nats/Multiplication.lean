@@ -3,8 +3,8 @@ import Nats.Basic
 import Mathlib.Tactic.LeftRight
 import Mathlib.Tactic.Contrapose
 --------------------------------------------------------------------------------
-open nat
-open nat.nat
+open Basic
+open Basic.nat
 open Addition
 namespace Multiplication
 --------------------------------------------------------------------------------
@@ -172,4 +172,17 @@ theorem pow_mul (a m n : nat) : a^(m*n) = (a^m)^n := by
     rw [zero_is_0, mul_zero, pow_zero, pow_zero]
   | succ d ih =>
     rw [pow_succ, <- ih, mul_succ, <- pow_add]
+
+--------------------------------------------------------------------------------
+
+def dvd (n a : nat) := ∃ b, a*b = n
+
+instance : Dvd nat where
+  dvd := Multiplication.dvd
+
+/- def div (x y : nat) : nat := -/
+/-   if 0 < y ∧ y ≤ x then -/
+/-     div (x - y) y + 1 -/
+/-   else -/
+/-     0 -/
 
