@@ -265,3 +265,50 @@ theorem even_add_odd_is_odd (a b : nat)
     rw [pred_even_is_odd, pred_odd_is_even]
     exact even_add_even_is_even _ _ ⟨ha, i⟩ 
 
+theorem odd_add_even_is_odd (a b : nat)
+    : is_odd a ∧ is_even b -> is_odd (a+b) := by
+  intro h
+  have i := even_add_odd_is_odd b a (And.symm h)
+  rw [add_comm] at i
+  exact i
+
+theorem odd_add_odd_is_even (a b : nat)
+    : is_odd a ∧ is_odd b -> is_even (a+b) := by
+  intro ⟨ha, hb⟩ 
+  cases b with
+  | zero =>
+    exfalso
+    exact zero_is_not_odd hb
+  | succ d =>
+    rw [add_succ, pred_even_is_odd]
+    rw [pred_odd_is_even] at hb
+    exact odd_add_even_is_odd _ _ ⟨ha, hb⟩ 
+
+--------------------------------------------------------------------------------
+
+theorem even_mul_is_even (a b : nat) : is_even a -> is_even (a*b) := by
+  intro ha
+  induction b generalizing a with
+  | zero =>
+    rw [zero_is_0, mul_zero]
+    exact zero_is_even
+  | succ d ih =>
+    have i := ih a ha
+    rw [mul_succ]
+    exact even_add_even_is_even _ _ ⟨ha, i⟩ 
+
+theorem odd_mul_odd_is_odd (a b : nat)
+    : is_odd a ∧ is_odd b -> is_odd (a*b) := by
+  intro ⟨ha, hb⟩ 
+  induction b generalizing a with
+  | zero =>
+    rw [zero_is_0, mul_zero]
+    exfalso
+    exact zero_is_not_odd hb
+  | succ d _ =>
+    rw [pred_odd_is_even] at hb
+    rw [mul_succ, mul_comm]
+    have i : is_even (d*a) := even_mul_is_even d a hb
+    exact odd_add_even_is_odd _ _ ⟨ha, i⟩ 
+
+

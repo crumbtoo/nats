@@ -32,6 +32,14 @@ theorem one_mul (a : nat) : 1 * a = a := by
   | zero      => rw [zero_is_0, mul_zero]
   | succ d ih => rw [mul_succ, ih, succ_eq_add_one, add_comm]
 
+theorem mul_comm (a b : nat) : a * b = b * a := by
+  induction b with
+  | zero =>
+    rw [zero_is_0, mul_zero, zero_mul]
+  | succ d ih =>
+    rw [mul_succ, succ_mul, ih]
+    simp
+
 theorem mul_left_distrib (a b c : nat) : a * (b + c) = (a*b + a*c) := by
   induction c with
   | zero      => rw [zero_is_0, add_zero, mul_zero, add_zero]
