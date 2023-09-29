@@ -12,9 +12,9 @@ namespace Order
 --------------------------------------------------------------------------------
 
 def le (a b : nat) := ∃ n, a + n = b
-def lt (a b : nat) := ∃ n, a + succ n = b
-def ge (a b : nat) := ¬ ∃ n, a + succ n = b
-def gt (a b : nat) := ¬ ∃ n, a + n = b
+def lt (a b : nat) := le a b ∧ a ≠ b
+def ge (a b : nat) := le b a
+def gt (a b : nat) := lt b a
 
 instance : LE nat where
   le := Order.le
@@ -23,164 +23,150 @@ instance : LT nat where
 
 --------------------------------------------------------------------------------
 
-theorem le_expand (a b : nat) : a ≤ b ↔ (∃ n, a + n = b) := by
-  have p : a ≤ b -> (∃ n, a + n = b) := by
+theorem le_is_le (a b : nat) : a ≤ b ↔ le a b := by rfl
+theorem lt_is_lt (a b : nat) : a < b ↔ lt a b := by rfl
+theorem ge_is_ge (a b : nat) : a ≥ b ↔ ge a b := by rfl
+theorem gt_is_gt (a b : nat) : a > b ↔ gt a b := by rfl
+
+theorem le_expand (a b : nat) : a ≤ b ↔ ∃ n, a + n = b := by rfl
+theorem lt_expand (a b : nat) : a < b ↔ a ≤ b ∧ a ≠ b := by rfl
+theorem ge_expand (a b : nat) : a ≥ b ↔ b ≤ a := by rfl
+theorem gt_expand (a b : nat) : a > b ↔ b < a := by rfl
+
+theorem lt_as_le (a b : nat) : a < b ↔ (a ≤ b ∧ a ≠ b) := by
+  have p : a < b -> (a ≤ b ∧ a ≠ b) := by
     intro ha
-    rw [<- le]
-    exact ha
-  have q : (∃ n, a + n = b) -> a ≤ b := by
+    rw [lt_is_lt, lt] at ha
+    cases ha with
+    | intro r s =>
+      rw [<- le_is_le] at r
+      exact ⟨r, s⟩ 
+  have q : (a ≤ b ∧ a ≠ b) -> a < b := by
     intro ha
-    rw [LE.le]
-    rw [<- le] at ha
+    rw [lt_expand]
     exact ha
   exact ⟨p, q⟩ 
 
-theorem lt_expand (a b : nat) : a < b ↔ (∃ n, a + succ n = b) := by
-  have p : a < b -> (∃ n, a + succ n = b) := by
+theorem lt_zero {k : nat} : ¬ k < 0 := by
+  intro ha
+  rw [lt_expand, le_expand] at ha
+  cases ha with
+  | intro p q =>
+    apply Exists.elim p $ λ w => by
+      intro hb
+      rw [zero_sum] at hb
+      cases hb with
+      | intro i o =>
+        contradiction
+
+theorem zero_le {k : nat} : 0 ≤ k := by
+  cases k with
+  | zero =>
+    rw [zero_is_0, le_expand]
+    use 0
+    rfl
+  | succ d =>
+    rw [le_expand]
+    use succ d
+    simp
+
+theorem le_zero {k : nat} : k ≤ 0 ↔ k = 0 := by
+  have p : k ≤ 0 -> k = 0 := by
     intro ha
-    rw [<- lt]
-    exact ha
-  have q : (∃ n, a + succ n = b) -> a < b := by
+    rw [le_expand] at ha
+    cases ha with
+    | intro w eh =>
+      rw [zero_sum] at eh
+      have ⟨i, _⟩ := eh
+      exact i
+  have q : k = 0 -> k ≤ 0 := by
     intro ha
-    rw [LT.lt]
-    rw [<- lt] at ha
+    rw [le_expand]
+    use 0
+    simp
     exact ha
   exact ⟨p, q⟩ 
 
-theorem zero_lt_succ (n : nat) : 0 < succ n := by
+theorem le_self {k : nat} : k ≤ k := by
+  use 0
+  simp
+
+theorem zero_lt_succ {k : nat} : 0 < succ k := by
+  rw [lt_expand]
+  have p : 0 ≠ succ k := by
+    apply Ne.symm
+    exact succ_ne_zero _
+  exact ⟨zero_le, p⟩ 
+
+theorem le_succ (n a : nat) : n ≤ a -> n ≤ succ a := by
+  cases n with
+  | zero =>
+    rw [zero_is_0]
+    intro _
+    exact zero_le
+  | succ d =>
+    intro ha
+    rw [le_expand]
+    rw [le_expand] at ha
+    cases ha with
+    | intro w eh =>
+      use succ w
+      rw [add_succ, succ_inj_iff]
+      exact eh
+
+theorem succ_is_gt (n : nat) : n < succ n := by
   induction n with
   | zero =>
-    rw [lt_expand]
-    use zero
-    simp
-  | succ d _ =>
-    rw [lt_expand]
-    use (succ d)
-    simp
-
-theorem succ_inj_lt (a b : nat) : succ a < succ b ↔ a < b := by
-  have p : succ a < succ b -> a < b := by
-    intro ha
-    induction b with
-    | zero =>
-      apply Exists.elim ha $ λ w => by
-        intro hb
-        exfalso
-        rw [add_succ, succ_inj_iff, succ_add] at hb
-        exact succ_ne_zero _ hb
-    | succ d _ =>
-      apply Exists.elim ha $ λ w => by
-        intro ha'
-        rw [add_succ, succ_inj_iff, succ_add, succ_inj_iff] at ha'
-        use w
-        rw [add_succ, succ_inj_iff]
-        exact ha'
-  have q : a < b -> succ a < succ b := by
-    intro ha
-    induction b with
-    | zero =>
-      apply Exists.elim ha $ λ w => by
-        intro ha'
-        exfalso
-        rw [add_succ] at ha'
-        exact succ_ne_zero _ ha'
-    | succ d _ =>
-      apply Exists.elim ha $ λ w => by
-        intro ha'
-        rw [add_succ, succ_inj_iff] at ha'
-        use w
-        rw [add_succ, succ_inj_iff, succ_add, succ_inj_iff]
-        exact ha'
-  exact ⟨p, q⟩ 
-
-theorem ne_is_lt_or_gt (a b : nat) : a ≠ b ↔ (a < b ∨ a > b) := by
-  have p : a ≠ b -> (a < b ∨ a > b) := by
-    intro ha
-    /- rw [GT.gt, lt_expand, lt_expand] -/
-    induction a generalizing b with
-    | zero =>
-      cases b with
-      | zero =>
-        contradiction
-      | succ d =>
-        left
-        exact zero_lt_succ _
-    | succ d ih =>
-      cases b with
-      | zero =>
-        right
-        rw [GT.gt]
-        exact zero_lt_succ _
-      | succ e =>
-        have hb : d ≠ e := by
-          intro hb
-          rw [<- succ_inj_iff] at hb
-          contradiction
-        have hc : d < e := by
-          ih e hb
-        left
-  have q : (a < b ∨ a > b) -> a ≠ b := by
-    sorry
-  exact ⟨p, q⟩ 
-
-theorem lt_add (a b n : nat) : a < b -> a < b + n := by
-  intro h
-  induction a with
-  | zero =>
-    cases n with
-    | zero =>
-      rw [zero_is_0, add_zero]
-      exact h
-    | succ d =>
-      rw [add_succ]
-      exact zero_lt_succ _
+    exact zero_lt_succ
   | succ d ih =>
-    cases n with
-    | zero =>
-      rw [zero_is_0, add_zero]
-      exact h
-    | succ e =>
-      rw [add_succ]
+    rw [lt_expand, le_expand]
+    have p : ∃ n, succ d + n = succ (succ d) := by
+      rw [lt_expand] at ih
+      cases ih with
+      | intro i o =>
+        cases i with
+        | intro w eh =>
+          use w
+          rw [succ_add, succ_inj_iff]
+          exact eh
+    have q : succ d ≠ succ (succ d) := by
+      exact n_ne_succ_n _
+    exact ⟨p, q⟩ 
 
-theorem ge_iff_not_lt (a b : nat) : a ≥ b ↔ ¬ a < b := by
-  have p : a ≥ b -> ¬ a < b := by
-    intro ha hb
-    rw [GE.ge, le_expand] at ha
-    rw [lt_expand] at hb
-    apply Exists.elim ha $ λ w => by
-      intro ha'
-      apply Exists.elim hb $ λ x => by
-        intro hb'
-        rw [<- ha', add_assoc, add_succ] at hb'
-        exact n_add_succ_ne_n _ hb'
-
-  have q : ¬ a < b -> a ≥ b := by
-    contrapose
-    rw [not_not]
-    intro ha
-    induction a with
-    | zero =>
+theorem succ_inj_le {a b : nat} : succ a ≤ succ b ↔ a ≤ b := by
+  induction b generalizing a with
+  | zero =>
+    have p : succ a ≤ succ 0 -> a ≤ 0 := by
+      intro ha
+      rw [le_zero]
+      cases ha with
+      | intro w eh =>
+        rw [succ_add, succ_inj_iff, zero_sum] at eh
+        cases eh with
+        | intro x _ =>
+          exact x
+    have q : a ≤ 0 -> succ a ≤ succ 0 := by
+      intro ha
+      cases ha with
+      | intro w eh =>
+        rw [zero_sum] at eh
+        have ⟨i, _⟩ := eh
+        rw [i]
+        exact le_self
+    exact ⟨p, q⟩
+  | succ d ih =>
+    have p : succ a ≤ succ (succ d) -> a ≤ succ d := by
       sorry
-    | succ d ih =>
+    have q : a ≤ succ d -> succ a ≤ succ (succ d) := by
       sorry
-    
-  exact ⟨p, q⟩ 
+    exact ⟨p, q⟩ 
 
-theorem gt_expand (a b : nat) : a > b ↔ ¬ (∃ n, a + n = b) := by
-  rw [GT.gt]
-  sorry
-
-theorem gt_ne (a b : nat) : a > b -> a ≠ b := by
-  intro h
-  sorry
-
-theorem sum_gt (a b n : nat) : a > n -> a+b > n := by
-  intro h
-  cases b with
+theorem le_add (n a b : nat) : n ≤ a -> n ≤ a + b := by
+  induction b with
   | zero =>
     rw [zero_is_0, add_zero]
+    intro h
     exact h
-  | succ d =>
+  | succ d ih =>
     sorry
-
 

@@ -1,4 +1,6 @@
 import Nats.Basic
+import Mathlib.Tactic.Contrapose
+import Mathlib.Logic.Basic
 --------------------------------------------------------------------------------
 open Basic
 open Basic.nat
@@ -89,4 +91,28 @@ theorem n_add_succ_ne_n (n : nat) : n + succ k ≠ n := by
       have i : d + succ (succ e) ≠ d := by
         exact ih
       contradiction
+
+theorem zero_sum {a b : nat} : a + b = 0 ↔ (a = 0 ∧ b = 0) := by
+  have p : a + b = 0 -> (a = 0 ∧ b = 0) := by
+    contrapose
+    intro h
+    rw [not_and_or, <- Ne, <- Ne] at h
+    rw [<- Ne]
+    cases h with
+    | inl hl =>
+      cases nz_is_succ a hl with
+      | intro w eh =>
+        rw [<- eh, succ_add]
+        exact succ_ne_zero _
+    | inr hr =>
+      cases nz_is_succ b hr with
+      | intro w eh =>
+        rw [<- eh, add_succ]
+        exact succ_ne_zero _
+    
+  have q : (a = 0 ∧ b = 0) -> a + b = 0 := by
+    intro ⟨ha, hb⟩ 
+    rw [ha, hb, add_zero]
+
+  exact ⟨p, q⟩ 
 
