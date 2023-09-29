@@ -98,7 +98,7 @@ theorem zero_lt_succ {k : nat} : 0 < succ k := by
     exact succ_ne_zero _
   exact ⟨zero_le, p⟩ 
 
-theorem le_succ (n a : nat) : n ≤ a -> n ≤ succ a := by
+theorem le_succ {n a : nat} : n ≤ a -> n ≤ succ a := by
   cases n with
   | zero =>
     rw [zero_is_0]
@@ -134,32 +134,46 @@ theorem succ_is_gt (n : nat) : n < succ n := by
     exact ⟨p, q⟩ 
 
 theorem succ_inj_le {a b : nat} : succ a ≤ succ b ↔ a ≤ b := by
-  induction b generalizing a with
+  cases a with
   | zero =>
-    have p : succ a ≤ succ 0 -> a ≤ 0 := by
+    have p : succ 0 ≤ succ b -> 0 ≤ b := by
+      intro _
+      exact zero_le
+    have q : 0 ≤ b -> succ 0 ≤ succ b := by
       intro ha
-      rw [le_zero]
-      cases ha with
-      | intro w eh =>
-        rw [succ_add, succ_inj_iff, zero_sum] at eh
-        cases eh with
-        | intro x _ =>
-          exact x
-    have q : a ≤ 0 -> succ a ≤ succ 0 := by
-      intro ha
-      cases ha with
-      | intro w eh =>
-        rw [zero_sum] at eh
-        have ⟨i, _⟩ := eh
-        rw [i]
+      have hb : 0 ≤ succ b := by
+        exact le_succ ha
+      cases b with
+      | zero =>
+        rw [zero_is_0]
         exact le_self
-    exact ⟨p, q⟩
-  | succ d ih =>
-    have p : succ a ≤ succ (succ d) -> a ≤ succ d := by
-      sorry
-    have q : a ≤ succ d -> succ a ≤ succ (succ d) := by
-      sorry
+      | succ d =>
+        rw [le_expand]
+        use succ d
+        rw [succ_add, zero_add]
     exact ⟨p, q⟩ 
+  | succ d =>
+    have p : succ (succ d) ≤ succ b -> succ d ≤ b := by
+      intro ha
+      rw [le_expand]
+      rw [le_expand] at ha
+      cases ha with
+      | intro w eh =>
+        rw [succ_add, succ_inj_iff] at eh
+        use w
+    have q : succ d ≤ b -> succ (succ d) ≤ succ b := by
+      intro ha
+      rw [le_expand]
+      rw [le_expand] at ha
+      cases ha with
+      | intro w eh =>
+        rw [<- succ_inj_iff, <- succ_add] at eh
+        use w
+    exact ⟨p, q⟩ 
+
+theorem le_transitive (a b c : nat) : a ≤ b ∧ b ≤ c -> a ≤ c := by
+  intro ⟨ha, hb⟩ 
+  sorry
 
 theorem le_add (n a b : nat) : n ≤ a -> n ≤ a + b := by
   induction b with
