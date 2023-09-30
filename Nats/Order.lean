@@ -87,6 +87,13 @@ theorem le_zero {k : nat} : k ≤ 0 ↔ k = 0 := by
     exact ha
   exact ⟨p, q⟩ 
 
+theorem succ_le_zero {k : nat} : ¬ succ k ≤ 0 := by
+  intro ha
+  cases ha with
+  | intro w eh =>
+    rw [succ_add] at eh
+    exact succ_ne_zero _ eh
+
 theorem le_self {k : nat} : k ≤ k := by
   use 0
   simp
@@ -170,6 +177,23 @@ theorem succ_inj_le {a b : nat} : succ a ≤ succ b ↔ a ≤ b := by
         rw [<- succ_inj_iff, <- succ_add] at eh
         use w
     exact ⟨p, q⟩ 
+
+theorem succ_le {n a : nat} : succ n ≤ a -> n ≤ a := by
+  intro ha
+  cases n with
+  | zero =>
+    exact zero_le
+  | succ d =>
+    cases ha with
+    | intro w eh =>
+      rw [succ_add] at eh
+      cases a with
+      | zero =>
+        exfalso
+        exact succ_ne_zero _ eh
+      | succ e =>
+        rw [<- eh, succ_inj_le, succ_eq_add_one, add_assoc]
+        use (1+w)
 
 theorem le_transitive (a b c : nat) : a ≤ b ∧ b ≤ c -> a ≤ c := by
   intro ⟨ha, hb⟩ 
