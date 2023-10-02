@@ -17,6 +17,15 @@ def pred : nat -> nat
 | 0      => 0
 | succ k => k
 
+axiom pred_inj (a b : nat) : pred a = pred b -> a = b
+
+def pred' (n : nat) {h : n ≠ 0} : nat := by
+  cases n with
+  | zero =>
+    contradiction
+  | succ d =>
+    exact d
+
 theorem nz_has_pred {n : nat} : n ≠ 0 ↔ ∃ p, succ p = n := by
   have p : (∃ p, succ p = n) -> n ≠ 0 := by
     intro ha
@@ -31,6 +40,9 @@ theorem nz_has_pred {n : nat} : n ≠ 0 ↔ ∃ p, succ p = n := by
         exact succ_ne_zero _
   exact ⟨nz_is_succ n, p⟩ 
 
+theorem pred_zero : pred 0 = 0 := by
+  rfl
+
 theorem pred_succ {n : nat} : pred (succ n) = n := by
   rfl
 
@@ -42,16 +54,19 @@ theorem add_pred (a b : nat) {h : b ≠ 0} : a + pred b = pred (a + b) := by
     rw [pred_succ, add_succ, pred_succ]
 
 theorem pred_inj_iff (a b : nat) : pred a = pred b ↔ a = b := by
-  sorry
+  have p : a = b -> pred a = pred b := by
+    intro ha
+    rw [ha]
+  exact ⟨pred_inj a b, p⟩
 
-def sub (a b : nat) {h : b ≤ a} : nat := by
+-- ∀ a b, a < b -> a - b = 0 :(
+def sub (a b : nat) : nat := by
   cases b with
-  -- a - 0
   | zero =>
     exact a
-  -- a - succ k
   | succ k =>
-    have p : k ≤ pred a := by
-      sorry
-    exact @sub (pred a) k p
+    exact sub (pred a) k
+
+instance : Sub nat where
+  sub := Subtraction.sub
 
