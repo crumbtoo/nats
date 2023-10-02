@@ -9,4 +9,6 @@ require mathlib from git
 
 @[default_target]
 lean_lib «Nats» where
+lean_lib «Fun» where
+lean_lib «Algebra» where
   -- add any library configuration options here

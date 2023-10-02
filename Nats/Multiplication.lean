@@ -33,6 +33,14 @@ theorem one_mul (a : nat) : 1 * a = a := by
   | zero      => rw [zero_is_0, mul_zero]
   | succ d ih => rw [mul_succ, ih, succ_eq_add_one, add_comm]
 
+theorem two_mul (n : nat) : 2 * n = n + n := by
+  induction n with
+  | zero =>
+    rw [zero_is_0, mul_zero, add_zero]
+  | succ d ih =>
+    have i : (2 : nat) = succ (succ 0) := by rfl
+    rw [mul_succ, ih, i, succ_add, succ_add, zero_add, succ_add, add_succ]
+
 theorem mul_comm (a b : nat) : a * b = b * a := by
   induction b with
   | zero =>
