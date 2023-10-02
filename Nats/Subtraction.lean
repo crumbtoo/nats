@@ -12,12 +12,10 @@ open Order
 namespace Subtraction
 --------------------------------------------------------------------------------
 
-def pred (n : nat) {h : n = succ k} : nat := by
-  cases n with
-  | zero =>
-    contradiction
-  | succ d =>
-    exact d
+-- i really don't that zero has a defined predecessor :(
+def pred : nat -> nat
+| 0      => 0
+| succ k => k
 
 theorem nz_has_pred {n : nat} : n ≠ 0 ↔ ∃ p, succ p = n := by
   have p : (∃ p, succ p = n) -> n ≠ 0 := by
@@ -33,7 +31,17 @@ theorem nz_has_pred {n : nat} : n ≠ 0 ↔ ∃ p, succ p = n := by
         exact succ_ne_zero _
   exact ⟨nz_is_succ n, p⟩ 
 
-theorem pred_inv_succ (n : nat) : pred (succ n) (n) = n := by
+theorem pred_succ {n : nat} : pred (succ n) = n := by
+  rfl
+
+theorem add_pred (a b : nat) {h : b ≠ 0} : a + pred b = pred (a + b) := by
+  cases b with
+  | zero =>
+    contradiction
+  | succ d =>
+    rw [pred_succ, add_succ, pred_succ]
+
+theorem pred_inj_iff (a b : nat) : pred a = pred b ↔ a = b := by
   sorry
 
 def sub (a b : nat) {h : b ≤ a} : nat := by
