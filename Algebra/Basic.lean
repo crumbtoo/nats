@@ -24,11 +24,31 @@ theorem inv_one [MyGroup G] : (one : G)⁻¹ = one := by
     rw [<- mul_inv one]
   rw [one_mul]
 
+theorem div_one [MyGroup G] (a : G) : a / one = a := by
+  rw [div_eq_mul_inv, inv_one, mul_one]
+
+theorem inv_inv [MyGroup G] : ∀ (a : G), a⁻¹⁻¹ = a := by
+  intro a
+  rw [<- one_mul a⁻¹⁻¹, <- mul_inv a, mul_assoc, mul_inv, mul_one]
+
+-- redo this later lol
+theorem inv_mul [MyGroup G] (a : G) : a⁻¹ * a = one := by
+  rw [<- mul_one a⁻¹]
+  conv =>
+    lhs
+    rw [<- mul_inv a⁻¹⁻¹]
+    rhs
+    rw [<- mul_one a, <- mul_inv a⁻¹, <- mul_assoc, mul_inv, one_mul]
+  rw [mul_inv, mul_one, mul_inv]
+
+theorem inv_comm [MyGroup G] (a : G) : a * a⁻¹ = a⁻¹ * a := by
+  rw [mul_inv, inv_mul]
+
 theorem mul_left_cancel [MyGroup G] (t a b : G) : t*a = t*b -> a = b := by
   intro h
   rw [<- one_mul a, <- one_mul b]
   rw [<- mul_inv t]
-  sorry
+  rw [inv_comm, mul_assoc, mul_assoc, h]
 
 theorem mul_right_cancel [MyGroup G] (t a b : G) : a*t = b*t -> a = b := by
   intro h
@@ -36,14 +56,6 @@ theorem mul_right_cancel [MyGroup G] (t a b : G) : a*t = b*t -> a = b := by
   rw [<- mul_inv t]
   rw [<- mul_assoc, <- mul_assoc]
   rw [h]
-
-theorem inv_mul [MyGroup G] (a : G) : a⁻¹ * a = one := by
-  sorry
-
-theorem inv_inv [MyGroup G] : ∀ (a : G), a⁻¹⁻¹ = a := by
-  intro a
-  apply mul_left_cancel a⁻¹
-  rw [inv_mul, mul_inv]
 
 example [MyGroup G] : ∀ (a : G), ∃ (b : G), a * b = one := by
   intro a
