@@ -57,11 +57,6 @@ theorem mul_right_cancel [MyGroup G] (t a b : G) : a*t = b*t -> a = b := by
   rw [<- mul_assoc, <- mul_assoc]
   rw [h]
 
-example [MyGroup G] : ∀ (a : G), ∃ (b : G), a * b = one := by
-  intro a
-  use a⁻¹
-  exact mul_inv a
-
 theorem inv_eq_recip [MyGroup G] (a : G) : a⁻¹ = one / a := by
   rw [<- one_mul a⁻¹]
   apply Eq.symm
@@ -74,12 +69,31 @@ theorem div_self [MyGroup G] (a : G) : a/a = one := by
   rw [div_eq_mul_inv]
   exact mul_inv _
 
-theorem mul_both [MyGroup G] (t : G) {a b : G} (h : a = b) : t*a = t*b := by
-  rw [h]
+theorem mul_div [MyGroup G] (a b c : G) : a*(b/c) = (a*b)/c := by
+  rw [div_eq_mul_inv, div_eq_mul_inv, mul_assoc]
 
-theorem inv_div [MyGroup G] (a b : G) : (a / b)⁻¹ = b / a := by
-  rw [inv_eq_recip]
+theorem div_cancel [MyGroup G] (a b c : G) : (a*b)/c = (a/c)*(b/c) := by
+  repeat rw [div_eq_mul_inv]
   sorry
+
+theorem inv_product [MyGroup G] (a b : G) : (a*b)⁻¹ = a⁻¹ * b⁻¹ := by
+  apply mul_left_cancel (a*b)
+  rw [mul_inv]
+  sorry
+
+theorem div_mul_div [MyGroup G] (a b c d : G)
+                    : (a/b) * (c/d) = (a*c)/(b*d)
+                    := by
+  apply mul_right_cancel ((a*c)/(b*d))⁻¹
+  rw [mul_inv]
+  conv =>
+    lhs
+
+
+
+
+/- theorem inv_div [MyGroup G] (a b : G) : (a / b)⁻¹ = b / a := by -/
+/-   rw [<- one_mul (a/b)⁻¹, ] -/
 
 theorem div_div [MyGroup G] (a b c : G) : a / (b / c) = a*c / b := by
   sorry
