@@ -72,31 +72,43 @@ theorem div_self [MyGroup G] (a : G) : a/a = one := by
 theorem mul_div [MyGroup G] (a b c : G) : a*(b/c) = (a*b)/c := by
   rw [div_eq_mul_inv, div_eq_mul_inv, mul_assoc]
 
-theorem div_cancel [MyGroup G] (a b c : G) : (a*b)/c = (a/c)*(b/c) := by
-  repeat rw [div_eq_mul_inv]
-  sorry
+theorem inv_product [MyGroup G] (a b : G) : (a*b)⁻¹ = b⁻¹ * a⁻¹ := by
+  have i := by
+    have j : a*b*b⁻¹*a⁻¹ = a*a⁻¹ := by
+      conv => lhs; lhs; rw [mul_assoc, mul_inv, mul_one]
+    calc
+      a*b*(b⁻¹*a⁻¹) = a*b*b⁻¹*a⁻¹     := by rw [<- mul_assoc]
+      _             = a*a⁻¹           := j
+      _             = one             := by rw [mul_inv]
 
-theorem inv_product [MyGroup G] (a b : G) : (a*b)⁻¹ = a⁻¹ * b⁻¹ := by
   apply mul_left_cancel (a*b)
-  rw [mul_inv]
-  sorry
+  rw [i, <- mul_inv (a*b)]
 
 theorem div_mul_div [MyGroup G] (a b c d : G)
                     : (a/b) * (c/d) = (a*c)/(b*d)
                     := by
   apply mul_right_cancel ((a*c)/(b*d))⁻¹
   rw [mul_inv]
-  conv =>
-    lhs
-
-
-
+  sorry
 
 /- theorem inv_div [MyGroup G] (a b : G) : (a / b)⁻¹ = b / a := by -/
 /-   rw [<- one_mul (a/b)⁻¹, ] -/
 
 theorem div_div [MyGroup G] (a b c : G) : a / (b / c) = a*c / b := by
   sorry
+
+example [MyGroup G] : ∀ a : G, a*a = one -> a = one := by
+  intro a h
+  have inv_a : a = a⁻¹ := calc
+    a = a             := by rfl
+    _ = a * (a * a⁻¹) := by rw [mul_inv, mul_one]
+    _ = a * a * a⁻¹   := by rw [mul_assoc]
+    _ = a⁻¹           := by rw [h, one_mul]
+  calc
+    a = one * a         := by rw [one_mul]
+    _ = a⁻¹ * a * a     := by rw [<- inv_mul a]
+    _ = a⁻¹ * a         := sorry
+    _ = one             := sorry
 
 example [MyGroup G] [Nonempty G]
         : (∀ (a : G), ∃ (b : G), a * b = one)
