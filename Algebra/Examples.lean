@@ -21,31 +21,66 @@ theorem zunit_neg_one : (-1 : ℤ) = -1 ∨ (-1 : ℤ) = 1 := by left; rfl
 #eval (⟨1, zunit_one⟩ : ZUnit)
 #eval (⟨-1, zunit_neg_one⟩ : ZUnit)
 
+theorem one_is_unit : isUnit 1 := by
+  right
+  rfl
+
+theorem neg_one_is_unit : isUnit (-1) := by
+  left
+  rfl
+
+-- todo: iff
+theorem neg_unit : isUnit n -> isUnit (-n) := by
+  intro h
+  cases h with
+  | inl hl => rw [hl, neg_neg]; exact one_is_unit
+  | inr hr => rw [hr];          exact neg_one_is_unit
+
+theorem unit_product : isUnit x ∧ isUnit y -> isUnit (x*y) := by
+  intro ⟨p, q⟩
+  cases p with
+  | inl hl₁ =>
+    cases q with
+    | inl hl₂ =>
+      rw [hl₁, hl₂]
+      simp
+      exact one_is_unit
+    | inr hr₂ =>
+      rw [hl₁, hr₂]
+      simp
+      exact neg_one_is_unit
+  | inr hr₁ =>
+    cases q with
+    | inl hl₂ =>
+      rw [hr₁, hl₂]
+      simp
+      exact neg_one_is_unit
+    | inr hr₂ =>
+      rw [hr₁, hr₂]
+      simp
+      exact one_is_unit
+
 instance : OfNat ZUnit 1 where
   ofNat := ⟨1, zunit_one⟩ 
-
-theorem fin_proof {p : ℤ -> Prop} : p (-1 : ℤ) ∧ p (1 : ℤ) -> ∀ (x : ZUnit), p (x.1) := by
-  intro ⟨p, q⟩ ⟨z, zp⟩ 
-  cases z with
-  | ofNat n => sorry
-  | negSucc n => sorry
   
 def neg : ZUnit -> ZUnit := by
   intro ⟨n, p⟩
-  have i : isUnit n -> isUnit (-n) := by
-    intro h
-    cases h with
-    | inl hl => rw [hl, neg_neg]; right; rfl
-    | inr hr => rw [hr]; left; rfl
-  exact ⟨-n, i p⟩ 
+  exact ⟨-n, neg_unit p⟩ 
 
 instance : Neg ZUnit where
   neg := ZUnit.neg
 
+def mul : ZUnit -> ZUnit -> ZUnit := by
+  intro ⟨a, p⟩ ⟨b, q⟩ 
+  exact ⟨a*b, unit_product ⟨p, q⟩⟩ 
+
+instance : Mul ZUnit where
+  mul := ZUnit.mul
+
 end ZUnit
 
-instance : MyGroup ZUnit where
-  mul := sorry
+instance : MyGroup ZUnit.ZUnit where
+  mul := Examples.ZUnit.mul
   mul_assoc := sorry
   one := sorry
   one_mul := sorry
