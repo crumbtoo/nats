@@ -11,7 +11,8 @@ namespace ZUnit
 /- def ZUnit := ({-1, 1} : Finset ℤ) -/
 /- def ZUnit := CoeSort.coe ({-1, 1} : Finset ℤ) -/
 /- def ZUnitSet := ({-1, 1} : Finset ℤ) -/
-def ZUnit := {n : ℤ // n = -1 ∨ n = 1}
+def isUnit n := n = -1 ∨ n = 1
+def ZUnit := {n : ℤ // isUnit n}
 
 theorem zunit_one : (1 : ℤ) = -1 ∨ (1 : ℤ) = 1 := by right; rfl
 
@@ -31,18 +32,15 @@ theorem fin_proof {p : ℤ -> Prop} : p (-1 : ℤ) ∧ p (1 : ℤ) -> ∀ (x : Z
   
 def neg : ZUnit -> ZUnit := by
   intro ⟨n, p⟩
-  cases n with
-  | ofNat k =>
-    have i : k = 1 := by sorry
-    have m : ℤ := (-1)
-    exact ⟨-1, zunit_neg_one⟩ 
-  | negSucc k => sorry
+  have i : isUnit n -> isUnit (-n) := by
+    intro h
+    cases h with
+    | inl hl => rw [hl, neg_neg]; right; rfl
+    | inr hr => rw [hr]; left; rfl
+  exact ⟨-n, i p⟩ 
 
 instance : Neg ZUnit where
   neg := ZUnit.neg
-
-def mul : ZUnit -> ZUnit -> ZUnit
-| 1, -1     => -1
 
 end ZUnit
 
