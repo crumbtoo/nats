@@ -1,7 +1,7 @@
 import Mathlib.Algebra.Group.Defs
 import Mathlib.Tactic.Use
 import Std.Tactic.Basic
-namespace Basic
+namespace MyGroup
 --------------------------------------------------------------------------------
 class MyMonoid (M : Type u) extends Mul M where
   mul_assoc : ∀ (a b c : M), (a * b) * c = a * (b * c)
