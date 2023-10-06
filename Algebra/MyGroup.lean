@@ -8,8 +8,30 @@ class MyMonoid (M : Type u) extends Mul M where
   one : M
   mul_one : ∀ (a : M), a * one = a
   one_mul : ∀ (a : M), one * a = a
+  npow : ℕ -> M -> M
+  npow_zero' : ∀ (m : M), npow zero m = one
+  npow_succ' : ∀ (m : M) (n : ℕ), npow (Nat.succ n) m = m * npow n m
 
 open MyMonoid
+
+instance [MyMonoid M] : OfNat M 1 where
+  ofNat := one
+
+@[default_instance]
+instance [MyMonoid M] : Pow M ℕ where
+  pow m n := npow n m
+
+/- variable {M : Type*} [Monoid M] -/
+
+theorem npow_eq_pow [MyMonoid M] (n : ℕ) (m : M) : npow n m = m^n := by rfl
+
+theorem npow_zero [MyMonoid M] (m : M) : m^zero = one := by
+  rw [<- npow_eq_pow, npow_zero']
+
+theorem npow_succ [MyMonoid M] (m : M) (n : ℕ) : m^(Nat.succ n) = m * m^n := by
+  rw [<- npow_eq_pow, <- npow_eq_pow, npow_succ']
+
+--------------------------------------------------------------------------------
 
 class MyGroup (G : Type u) extends MyMonoid G, Inv G, Div G where
   mul_inv : ∀ (a : G), a * a⁻¹ = one
@@ -84,6 +106,11 @@ theorem inv_product [MyGroup G] (a b : G) : (a*b)⁻¹ = b⁻¹ * a⁻¹ := by
   apply mul_left_cancel (a*b)
   rw [i, <- mul_inv (a*b)]
 
+theorem npow_product [MyGroup G] (a b : G) (n : ℕ) : (a*b)^n = a^n * b^n := by
+  induction n with
+  | zero =>
+    rw [npow_zero]
+
 theorem div_mul_div [MyGroup G] (a b c d : G)
                     : (a/b) * (c/d) = (a*c)/(b*d)
                     := by
@@ -95,6 +122,23 @@ theorem div_mul_div [MyGroup G] (a b c d : G)
 /-   rw [<- one_mul (a/b)⁻¹, ] -/
 
 theorem div_div [MyGroup G] (a b c : G) : a / (b / c) = a*c / b := by
+  sorry
+
+example [MyGroup G] : ¬ ∀ (a : G), a * a = one -> a = one := by
+  intro h
+  have a := Classical.arbitrary G
+  specialize h a
+  sorry
+
+theorem own_inv [MyGroup G] {a : G} : a*a = one -> a⁻¹ = a := by
+  intro h
+  apply mul_left_cancel a
+  rw [h]
+  exact mul_inv _
+
+example [MyGroup G] (a : G) : a*a = one -> ∀ b, a*b = b*a := by
+  intro h b
+  rw [<- one_mul (a*b), <- mul_one (b*a)]
   sorry
 
 example [MyGroup G] : ∀ a : G, a*a = one -> a = one := by
