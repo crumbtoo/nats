@@ -4,11 +4,8 @@ import Std.Tactic.Basic
 --------------------------------------------------------------------------------
 namespace MyGroup
 --------------------------------------------------------------------------------
-class MyMonoid (M : Type u) extends Mul M, One M where
+class MyMonoid (M : Type u) extends MulOneClass M where
   mul_assoc : ∀ (a b c : M), (a * b) * c = a * (b * c)
-  /- one : M -/
-  mul_one : ∀ (a : M), a * 1 = a
-  one_mul : ∀ (a : M), 1 * a = a
   npow : ℕ -> M -> M
   npow_zero' : ∀ (m : M), npow 0 m = 1
   npow_succ' : ∀ (m : M) (n : ℕ), npow (n+1) m = m * npow n m
