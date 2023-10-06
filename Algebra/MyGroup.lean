@@ -42,31 +42,30 @@ theorem npow_mul [MyMonoid M] (m : M) (n : ℕ) : m^n * m = m^(n+1) := by
   | succ k ih =>
     rw [npow_succ, npow_succ, mul_assoc, ih]
 
-theorem npow_add [MyMonoid M] (m : M) (n k : ℕ) : (m^n)^k = m^(n*k) := by
-  induction k with
-  | zero =>
-    rw [npow_zero, Nat.mul_zero, npow_zero]
-  | succ d ih =>
-    rw [npow_succ]
-    sorry
+theorem npow_add [MyMonoid M] (m : M) (n k : ℕ) : m^n * m^k = m^(n+k) := by
+  sorry
 
 theorem npow_comm [MyMonoid M] (m : M) (n k : ℕ) : m^n * m^k = m^k * m^n := by
-  induction n with
+  induction n generalizing k with
   | zero =>
     rw [npow_zero, one_mul, mul_one]
   | succ d ih =>
     conv => lhs; rw [npow_succ]
-    rw [npow_succ, <- mul_assoc]
-    sorry
+    conv => rhs; rw [<- npow_mul]
+    rw [<- mul_assoc, mul_assoc, ih, <- mul_assoc]
+    rw [<- npow_succ, <- npow_mul, mul_assoc, <- npow_succ, <- npow_mul]
+    rw [<- mul_assoc]
 
-theorem npow_product [MyMonoid G] (a b : G) (n : ℕ) : (a*b)^n = a^n * b^n := by
-  induction n with
-  | zero =>
-    repeat rw [npow_zero]
-    rw [mul_one]
-  | succ n ih =>
-    rw [npow_succ, ih]
-    sorry
+theorem mul_npow_comm [MyMonoid M] (m : M) (n : ℕ) : m * m^k = m^k * m := by
+  conv =>
+    pattern m^k*m
+    rhs
+    rw [<- npow_one m]
+  conv =>
+    pattern m*m^k
+    lhs
+    rw [<- npow_one m]
+  exact npow_comm m 1 k
 
 --------------------------------------------------------------------------------
 
