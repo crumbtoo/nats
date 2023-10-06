@@ -110,6 +110,9 @@ theorem npow_product [MyGroup G] (a b : G) (n : ℕ) : (a*b)^n = a^n * b^n := by
   induction n with
   | zero =>
     rw [npow_zero]
+    sorry
+  | succ n ih =>
+    sorry
 
 theorem div_mul_div [MyGroup G] (a b c d : G)
                     : (a/b) * (c/d) = (a*c)/(b*d)
