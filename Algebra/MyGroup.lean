@@ -77,6 +77,10 @@ class MyGroup (G : Type u) extends MyMonoid G, Inv G, Div G where
 
 open MyGroup
 
+@[default_instance]
+instance [MyGroup G] : Pow G ℕ where
+  pow m n := npow n m
+
 variable {G : Type*} [MyGroup G]
 
 theorem inv_one : (1 : G)⁻¹ = 1 := by
