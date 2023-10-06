@@ -1,11 +1,12 @@
+import Mathlib.Data.Finset.Basic
 import Mathlib.Algebra.Group.Defs
 import Mathlib.Tactic.Use
 import Std.Tactic.Basic
 --------------------------------------------------------------------------------
 namespace MyGroup
 --------------------------------------------------------------------------------
-class MyMonoid (M : Type u) extends MulOneClass M where
-  mul_assoc : ∀ (a b c : M), (a * b) * c = a * (b * c)
+class MyMonoid (M : Type u) extends Semigroup M, MulOneClass M where
+  /- mul_assoc : ∀ (a b c : M), (a * b) * c = a * (b * c) -/
   npow : ℕ -> M -> M
   npow_zero' : ∀ (m : M), npow 0 m = 1
   npow_succ' : ∀ (m : M) (n : ℕ), npow (n+1) m = m * npow n m
@@ -79,6 +80,9 @@ open MyGroup
 
 @[default_instance]
 instance [MyGroup G] : Pow G ℕ where
+  pow m n := npow n m
+
+instance [MyGroup G] : Pow G (Finset ℕ) where
   pow m n := npow n m
 
 variable {G : Type*} [MyGroup G]
