@@ -19,31 +19,28 @@ instance [MyMonoid M] : OfNat M 1 where
 instance [MyMonoid M] : Pow M ℕ where
   pow m n := npow n m
 
-/- variable {M : Type*} [Monoid M] -/
+variable {M : Type*} [MyMonoid M]
 
-theorem npow_eq_pow [MyMonoid M] (n : ℕ) (m : M) : npow n m = m^n := by rfl
+theorem npow_eq_pow (n : ℕ) (m : M) : npow n m = m^n := by rfl
 
-theorem npow_zero [MyMonoid M] (m : M) : m^0 = 1 := by
+theorem npow_zero (m : M) : m^0 = 1 := by
   rw [<- npow_eq_pow, npow_zero']
 
-theorem npow_succ [MyMonoid M] (m : M) (n : ℕ) : m^(n+1) = m * m^n := by
+theorem npow_succ (m : M) (n : ℕ) : m^(n+1) = m * m^n := by
   rw [<- npow_eq_pow, <- npow_eq_pow, npow_succ']
 
-theorem npow_one [MyMonoid M] (m : M) : m^1 = m := by
+theorem npow_one (m : M) : m^1 = m := by
   rw [npow_succ, npow_zero, mul_one]
 
-theorem npow_mul [MyMonoid M] (m : M) (n : ℕ) : m^n * m = m^(n+1) := by
+theorem npow_mul (m : M) (n : ℕ) : m^n * m = m^(n+1) := by
   induction n with
   | zero =>
     rw [npow_zero, one_mul, Nat.zero_add, npow_one]
   | succ k ih =>
     rw [npow_succ, npow_succ, mul_assoc, ih]
 
-theorem npow_add [MyMonoid M] (m : M) (n k : ℕ) : m^n * m^k = m^(n+k) := by
-  sorry
-
-theorem npow_comm [MyMonoid M] (m : M) (n k : ℕ) : m^n * m^k = m^k * m^n := by
-  induction n generalizing k with
+theorem npow_comm (m : M) (n k : ℕ) : m^n * m^k = m^k * m^n := by
+  induction n with
   | zero =>
     rw [npow_zero, one_mul, mul_one]
   | succ d ih =>
@@ -53,7 +50,7 @@ theorem npow_comm [MyMonoid M] (m : M) (n k : ℕ) : m^n * m^k = m^k * m^n := by
     rw [<- npow_succ, <- npow_mul, mul_assoc, <- npow_succ, <- npow_mul]
     rw [<- mul_assoc]
 
-theorem mul_npow_comm [MyMonoid M] (m : M) (n : ℕ) : m * m^k = m^k * m := by
+theorem mul_npow_comm (m : M) (n : ℕ) : m * m^k = m^k * m := by
   conv =>
     pattern m^k*m
     rhs
@@ -64,6 +61,14 @@ theorem mul_npow_comm [MyMonoid M] (m : M) (n : ℕ) : m * m^k = m^k * m := by
     rw [<- npow_one m]
   exact npow_comm m 1 k
 
+theorem npow_add (m : M) (n k : ℕ) : m^n * m^k = m^(n+k) := by
+  induction k with
+  | zero =>
+    rw [npow_zero, Nat.add_zero, mul_one]
+  | succ d ih =>
+    rw [Nat.add_succ, npow_succ m (n+d), npow_succ, <- mul_assoc]
+    rw [<- mul_npow_comm m n, mul_assoc, ih]
+
 --------------------------------------------------------------------------------
 
 class MyGroup (G : Type u) extends MyMonoid G, Inv G, Div G where
@@ -72,22 +77,24 @@ class MyGroup (G : Type u) extends MyMonoid G, Inv G, Div G where
 
 open MyGroup
 
-theorem inv_one [MyGroup G] : (1 : G)⁻¹ = 1 := by
+variable {G : Type*} [MyGroup G]
+
+theorem inv_one : (1 : G)⁻¹ = 1 := by
   /- rw [inv_eq_recip, div_eq_mul_inv] -/
   conv =>
     rhs
     rw [<- mul_inv 1]
   rw [one_mul]
 
-theorem div_one [MyGroup G] (a : G) : a / 1 = a := by
+theorem div_one (a : G) : a / 1 = a := by
   rw [div_eq_mul_inv, inv_one, mul_one]
 
-theorem inv_inv [MyGroup G] : ∀ (a : G), a⁻¹⁻¹ = a := by
+theorem inv_inv : ∀ (a : G), a⁻¹⁻¹ = a := by
   intro a
   rw [<- one_mul a⁻¹⁻¹, <- mul_inv a, mul_assoc, mul_inv, mul_one]
 
 -- redo this later lol
-theorem inv_mul [MyGroup G] (a : G) : a⁻¹ * a = 1 := by
+theorem inv_mul (a : G) : a⁻¹ * a = 1 := by
   rw [<- mul_one a⁻¹]
   conv =>
     lhs
@@ -96,38 +103,38 @@ theorem inv_mul [MyGroup G] (a : G) : a⁻¹ * a = 1 := by
     rw [<- mul_one a, <- mul_inv a⁻¹, <- mul_assoc, mul_inv, one_mul]
   rw [mul_inv, mul_one, mul_inv]
 
-theorem inv_comm [MyGroup G] (a : G) : a * a⁻¹ = a⁻¹ * a := by
+theorem inv_comm (a : G) : a * a⁻¹ = a⁻¹ * a := by
   rw [mul_inv, inv_mul]
 
-theorem mul_left_cancel [MyGroup G] (t a b : G) : t*a = t*b -> a = b := by
+theorem mul_left_cancel (t a b : G) : t*a = t*b -> a = b := by
   intro h
   rw [<- one_mul a, <- one_mul b]
   rw [<- mul_inv t]
   rw [inv_comm, mul_assoc, mul_assoc, h]
 
-theorem mul_right_cancel [MyGroup G] (t a b : G) : a*t = b*t -> a = b := by
+theorem mul_right_cancel (t a b : G) : a*t = b*t -> a = b := by
   intro h
   rw [<- mul_one a, <- mul_one b]
   rw [<- mul_inv t]
   rw [<- mul_assoc, <- mul_assoc]
   rw [h]
 
-theorem inv_eq_recip [MyGroup G] (a : G) : a⁻¹ = 1 / a := by
+theorem inv_eq_recip (a : G) : a⁻¹ = 1 / a := by
   rw [<- one_mul a⁻¹]
   apply Eq.symm
   exact MyGroup.div_eq_mul_inv 1 a
 
-theorem mul_div_assoc [MyGroup G] (a b c : G) : a*(b/c) = (a*b)/c := by
+theorem mul_div_assoc (a b c : G) : a*(b/c) = (a*b)/c := by
   rw [div_eq_mul_inv, <- mul_assoc, <- div_eq_mul_inv]
 
-theorem div_self [MyGroup G] (a : G) : a/a = 1 := by
+theorem div_self (a : G) : a/a = 1 := by
   rw [div_eq_mul_inv]
   exact mul_inv _
 
-theorem mul_div [MyGroup G] (a b c : G) : a*(b/c) = (a*b)/c := by
+theorem mul_div (a b c : G) : a*(b/c) = (a*b)/c := by
   rw [div_eq_mul_inv, div_eq_mul_inv, mul_assoc]
 
-theorem inv_product [MyGroup G] (a b : G) : (a*b)⁻¹ = b⁻¹ * a⁻¹ := by
+theorem inv_product (a b : G) : (a*b)⁻¹ = b⁻¹ * a⁻¹ := by
   have i := by
     have j : a*b*b⁻¹*a⁻¹ = a*a⁻¹ := by
       conv => lhs; lhs; rw [mul_assoc, mul_inv, mul_one]
@@ -139,65 +146,34 @@ theorem inv_product [MyGroup G] (a b : G) : (a*b)⁻¹ = b⁻¹ * a⁻¹ := by
   apply mul_left_cancel (a*b)
   rw [i, <- mul_inv (a*b)]
 
-theorem div_mul_div [MyGroup G] (a b c d : G)
+theorem inv_div (a b : G) : (a / b)⁻¹ = b / a := by
+  repeat rw [div_eq_mul_inv]
+  rw [inv_product, inv_inv]
+
+theorem div_mul_div (a b c d : G)
                     : (a/b) * (c/d) = (a*c)/(b*d)
                     := by
   apply mul_right_cancel ((a*c)/(b*d))⁻¹
   rw [mul_inv]
   sorry
 
-/- theorem inv_div [MyGroup G] (a b : G) : (a / b)⁻¹ = b / a := by -/
-/-   rw [<- one_mul (a/b)⁻¹, ] -/
-
-theorem div_div [MyGroup G] (a b c : G) : a / (b / c) = a*c / b := by
+theorem div_div (a b c : G) : a / (b / c) = a*c / b := by
   sorry
 
-example [MyGroup G] : ¬ ∀ (a : G), a * a = 1 -> a = 1 := by
+example : ¬ ∀ (a : G), a * a = 1 -> a = 1 := by
   intro h
   have a := Classical.arbitrary G
   specialize h a
   sorry
 
-theorem own_inv [MyGroup G] {a : G} : a*a = 1 -> a⁻¹ = a := by
+theorem own_inv (a : G) : a*a = 1 -> a⁻¹ = a := by
   intro h
   apply mul_left_cancel a
   rw [h]
   exact mul_inv _
 
-example [MyGroup G] (a : G) : a*a = 1 -> ∀ b, a*b = b*a := by
+example (a : G) : a*a = 1 -> ∀ b, a*b = b*a := by
   intro h b
   rw [<- one_mul (a*b), <- mul_one (b*a)]
   sorry
-
-example [MyGroup G] : ∀ a : G, a*a = 1 -> a = 1 := by
-  intro a h
-  have inv_a : a = a⁻¹ := calc
-    a = a             := by rfl
-    _ = a * (a * a⁻¹) := by rw [mul_inv, mul_one]
-    _ = a * a * a⁻¹   := by rw [mul_assoc]
-    _ = a⁻¹           := by rw [h, one_mul]
-  calc
-    a = 1 * a           := by rw [one_mul]
-    _ = a⁻¹ * a * a     := by rw [<- inv_mul a]
-    _ = a⁻¹ * a         := sorry
-    _ = 1               := sorry
-
-example [MyGroup G] [Nonempty G]
-        : (∀ (a : G), ∃ (b : G), a * b = 1)
-        -> ∃ (f : G -> G), ∀ n, n * f n = 1
-        := by
-  intro h
-  /- have f := Classical.arbitrary (G -> G) -/
-  /- use f -/
-  have a := Classical.arbitrary G
-  cases h a with
-  | intro w eh =>
-    have f : G -> G := by
-      intro _
-      exact w
-    have i (x : G) : f x = w := sorry
-    use f
-    intro n
-    rw [i]
-    sorry
 
