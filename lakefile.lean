@@ -11,4 +11,5 @@ require mathlib from git
 lean_lib «Nats» where
 lean_lib «Fun» where
 lean_lib «Algebra» where
+lean_lib «TPIL» where
   -- add any library configuration options here
