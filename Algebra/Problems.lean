@@ -10,20 +10,26 @@ open Group
 open Monoid
 --------------------------------------------------------------------------------
 
-lemma elem_or_eq {n : ℕ}
-        : n ∈ ({100, 101, 102} : Finset ℕ) ↔ n = 100 ∨ n = 101 ∨ n = 102
+section HoldenGroupProblem
+
+def MulPow (G : Type) [Group G] (n : ℕ) := ∀ (a b : G), (a*b)^n = a^n * b^n
+
+theorem mul_pow_implies_comm
+        [Group G] (j : ℕ)
+        : MulPow G j ∧ MulPow G (j+1) ∧ MulPow G (j+2)
+        -> ∀ (a b : G), Commute a b
         := by
+  intro ⟨powj, powk, powl⟩ a b
+  let k := j + 1
+  let l := j + 2
+
+  have p : b*(a*b)^j = (a*b)^j*b := by
+    have lem₁ : (a*b)^l = a*a^k*b^k*b := sorry
+    conv => rhs; rw [powj]
+    apply MaddyGroupLemmas.mul_left_cancel a
+    sorry
+
   sorry
-
-lemma CommGroup_of_comm_group
-      [Group G]
-      : (∀ (a b : G), a*b = b*a) -> CommGroup G := by
-  intro h
-  exact { mul_comm := h }
-
-lemma both (f : α -> β) : a = b -> f a = f b := by
-  intro h
-  rw [h]
 
 -- Suppose G is a group where (ab)ⁿ = aⁿbⁿ for all a, b ∈ G and n ∈ {100, 101,
 -- 102}. Prove that G is abelian.
@@ -35,31 +41,6 @@ example [Group G]
   intro h
   intro x y
   -- actual proof
-  have p : y*(x*y)^100 = (x*y)^100 * y := by
-    apply MaddyGroupLemmas.mul_left_cancel x
-    rw [<- mul_assoc, <- mul_assoc]
-    conv =>
-      rhs; lhs; rhs
-      rw [h x y ⟨100, by simp⟩]
-      simp
-    have j : 100 + 1 = 101 := by rfl
-    conv =>
-      rhs
-      rw [<- mul_assoc, <- pow_succ]
-      rw [mul_assoc, pow_mul_comm', <- pow_succ]
-      rw [j]
-    conv =>
-      lhs
-      rw [<- pow_succ]
-      rw [j]
-    exact h x y ⟨101, by simp⟩
-  apply MaddyGroupLemmas.mul_left_cancel x
-  apply MaddyGroupLemmas.mul_right_cancel y
-  apply MaddyGroupLemmas.mul_right_cancel ((x*y)^100)
-  conv => rhs; rw [mul_assoc, p]
-
-    /- x^101 * y^101 = (x*y)^101         := Eq.symm $ h x y ⟨101, sorry⟩ -/
-    /- _             = x*y*(x*y)^100     := by rw [pow_succ] -/
   sorry
 
 /- example [Group G] -/
@@ -76,4 +57,5 @@ example [Group G]
 /-   intro x y -/
 /-   -- start of actual proof -/
 
+end HoldenGroupProblem
 
