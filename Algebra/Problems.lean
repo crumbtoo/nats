@@ -103,10 +103,14 @@ end
 
 --------------------------------------------------------------------------------
 
-lemma zmod_is_of_nat (n : ℕ) (a : ZMod n) : ∃ (k : ℕ), ↑k = a := by
-  use ↑a
-  
 example (n : ℕ) (a b c : ZMod n) : a + b + c = a + (b + c) := by
-  sorry
-
+  rw [<- ZMod.cast_id _ a, <- ZMod.cast_id _ b, <- ZMod.cast_id _ c]
+  cases n with
+  | zero =>
+    have h : ZMod Nat.zero = ℤ := by rfl
+    let j := @add_assoc ℤ
+    rw [<- h] at j
+    exact j a b c
+  | succ k =>
+    rw [ZMod.cast_eq_val]
 
