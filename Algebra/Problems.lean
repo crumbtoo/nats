@@ -72,25 +72,19 @@ theorem mul_pow_implies_comm
 -- Suppose G is a group where (ab)ⁿ = aⁿbⁿ for all a, b ∈ G and n ∈ {100, 101,
 -- 102}. Prove that G is abelian.
 example [Group G]
-        : ∀ (a b : G) (n : ({100, 101, 102} : Finset ℕ)),
-            (a*b)^↑↑n = a^↑↑n * b^↑↑n
+        : ∀ (a b : G), 
+            (∀ (n : ({100, 101, 102} : Finset ℕ)),
+              (a*b)^↑↑n = a^↑↑n * b^↑↑n)
         -> a*b = b*a
         := by
-  intro a b n h
-  have i : ℕ := 100
-  have j : ℕ := 101
-  have k : ℕ := 102
-  cases n.val with
-  | zero =>
-    sorry
-  | succ d =>
-    sorry
-  
-
---------------------------------------------------------------------------------
-
+  intro a b h
+  have hi : (a*b)^100 = a^100*b^100 := h ⟨100, by simp⟩
+  have hj : (a*b)^101 = a^101*b^101 := h ⟨101, by simp⟩
+  have hk : (a*b)^102 = a^102*b^102 := h ⟨102, by simp⟩
+  exact mul_pow_implies_comm 100 a b ⟨hi, hj, hk⟩ 
 
 end HoldenGroupProblem
+--------------------------------------------------------------------------------
 
 section
 
@@ -112,7 +106,6 @@ end
 lemma zmod_is_of_nat (n : ℕ) (a : ZMod n) : ∃ (k : ℕ), ↑k = a := by
   use ↑a
   
-
 example (n : ℕ) (a b c : ZMod n) : a + b + c = a + (b + c) := by
   sorry
 
