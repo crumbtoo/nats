@@ -13,36 +13,79 @@ open Monoid
 
 section HoldenGroupProblem
 
-def MulPow (G : Type) [Group G] (n : ℕ) := ∀ (a b : G), (a*b)^n = a^n * b^n
+def MulPow (G : Type) [Group G] (n : ℕ) (a b : G) := (a*b)^n = a^n * b^n
 
 theorem mul_pow_implies_comm
-        [Group G] (j : ℕ)
-        : MulPow G j ∧ MulPow G (j+1) ∧ MulPow G (j+2)
-        -> ∀ (a b : G), Commute a b
+        [Group G] (i : ℕ)
+        : ∀ (a b : G), MulPow G i a b ∧ MulPow G (i+1) a b ∧ MulPow G (i+2) a b
+          -> Commute a b
         := by
-  intro ⟨powj, powk, powl⟩ a b
-  let k := j + 1
-  let l := j + 2
+  intro a b ⟨powi, powj, powk⟩
+  let j := i + 1
+  conv at powj in (i+1) => change j
 
-  have p : b*(a*b)^j = (a*b)^j*b := by
-    have lem₁ : (a*b)^l = a*a^k*b^k*b := sorry
-    conv => rhs; rw [powj]
-    apply MaddyGroupLemmas.mul_left_cancel a
-    sorry
+  have lem₁ : (a*b)^j*a = a*(a*b)^j := by
+    rw [powj]
+    apply MaddyGroupLemmas.mul_right_cancel b
+    conv =>
+      congr
+      · rw [mul_assoc _ a b]
+        rw [<- powj]
+        rw [<- pow_succ']
+      · rw [<- mul_assoc, mul_assoc _]
+        congr
+        · rw [<- pow_succ]
+        · rw [<- pow_succ']
+    exact powk
 
-  sorry
+  apply Eq.symm
+  apply MaddyGroupLemmas.mul_left_cancel (a^i*b^i)
+  conv => rhs; rw [<- powi, <- pow_succ']
+  conv in (i+1) => change j
+  rw [powj]
+  have hi : b^i*b*a = a*b^j -> a^i*b^i*(b*a) = a^j*b^j := by
+    intro ha
+    apply MaddyGroupLemmas.mul_left_cancel (a^i)⁻¹
+    conv =>
+      lhs
+      rw [mul_assoc, <- mul_assoc, mul_left_inv, one_mul]
+      rw [<- mul_assoc, <- pow_succ']
+      pattern (i+1); change j
+    conv =>
+      rhs
+      rw [pow_succ', <- mul_assoc, <- mul_assoc, mul_left_inv, one_mul]
+    rw [<- pow_succ'] at ha
+    conv at ha in (i+1) => change j
+    exact ha
+  apply hi
+  rw [<- pow_succ']
+  conv in (i+1) => change j
+  apply MaddyGroupLemmas.mul_left_cancel (a^j)
+  apply MaddyGroupLemmas.mul_right_cancel b
+  rw [<- mul_assoc, <- powj]
+  rw [mul_assoc, <- pow_succ']
+  conv =>
+    rhs; rw [<- mul_assoc, Commute.pow_left]
+    lhs; rw [mul_assoc, <- powj, <- lem₁]
+  rw [mul_assoc, <- pow_succ']
 
 -- Suppose G is a group where (ab)ⁿ = aⁿbⁿ for all a, b ∈ G and n ∈ {100, 101,
 -- 102}. Prove that G is abelian.
 example [Group G]
-        : (∀ (a b : G) (n : ({100, 101, 102} : Finset ℕ)),
-            (a*b)^↑↑n = a^↑↑n * b^↑↑n )
-        -> (∀ (x y : G), x*y = y*x)
+        : ∀ (a b : G) (n : ({100, 101, 102} : Finset ℕ)),
+            (a*b)^↑↑n = a^↑↑n * b^↑↑n
+        -> a*b = b*a
         := by
-  intro h
-  intro x y
-  -- actual proof
-  sorry
+  intro a b n h
+  have i : ℕ := 100
+  have j : ℕ := 101
+  have k : ℕ := 102
+  cases n.val with
+  | zero =>
+    sorry
+  | succ d =>
+    sorry
+  
 
 --------------------------------------------------------------------------------
 
