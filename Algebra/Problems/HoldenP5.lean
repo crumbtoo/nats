@@ -106,28 +106,3 @@ end
 
 --------------------------------------------------------------------------------
 
-namespace DFAA117
-
--- Let G = { z ∈ ℂ | ∃ (n ∈ ℕ) : zⁿ = 1 }
---  (a) Prove that G is a group under multiplication
---  (b) Prove that G is not a group under addition
-
-def G := { z : ℂ // ∃ (n : ℕ), z^n = 1 }
-
-noncomputable def zangle : G -> ℝ := by
-  intro ⟨z, _⟩
-  exact Real.arctan (z.im / z.re)
-
-theorem z_is_rational : ∀ (a : G), ∃ (q : ℚ), zangle a = q * π := by
-  intro a
-  let w := Classical.arbitrary ℚ
-  sorry
-
-/- def mul : G -> G -> G := by -/
-/-   intro ⟨a, pa⟩ ⟨b, pb⟩ -/
-
-/- theorem mul_one (a : G) : a * 1 := by -/
-/-   sorry -/
-
-end DFAA117
-
