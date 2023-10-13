@@ -4,6 +4,9 @@ import Mathlib.Algebra.GroupPower.Basic
 import Mathlib.Algebra.Category.GroupCat.EquivalenceGroupAddGroup
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.ZMod.Basic
+import Mathlib.Data.Complex.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Arctan
+import Mathlib.Logic.Nonempty
 import Algebra.Lemmas.Group
 --------------------------------------------------------------------------------
 namespace Problems
@@ -103,14 +106,28 @@ end
 
 --------------------------------------------------------------------------------
 
-example (n : ℕ) (a b c : ZMod n) : a + b + c = a + (b + c) := by
-  rw [<- ZMod.cast_id _ a, <- ZMod.cast_id _ b, <- ZMod.cast_id _ c]
-  cases n with
-  | zero =>
-    have h : ZMod Nat.zero = ℤ := by rfl
-    let j := @add_assoc ℤ
-    rw [<- h] at j
-    exact j a b c
-  | succ k =>
-    rw [ZMod.cast_eq_val]
+namespace DFAA117
+
+-- Let G = { z ∈ ℂ | ∃ (n ∈ ℕ) : zⁿ = 1 }
+--  (a) Prove that G is a group under multiplication
+--  (b) Prove that G is not a group under addition
+
+def G := { z : ℂ // ∃ (n : ℕ), z^n = 1 }
+
+noncomputable def zangle : G -> ℝ := by
+  intro ⟨z, _⟩
+  exact Real.arctan (z.im / z.re)
+
+theorem z_is_rational : ∀ (a : G), ∃ (q : ℚ), zangle a = q * π := by
+  intro a
+  let w := Classical.arbitrary ℚ
+  sorry
+
+/- def mul : G -> G -> G := by -/
+/-   intro ⟨a, pa⟩ ⟨b, pb⟩ -/
+
+/- theorem mul_one (a : G) : a * 1 := by -/
+/-   sorry -/
+
+end DFAA117
 
