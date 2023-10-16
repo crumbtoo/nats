@@ -12,6 +12,11 @@ def g : ℝ -> ℝ := λ x => 2*x
 def f' : ℝ -> ℝ := λ x => x-1
 noncomputable def g' : ℝ -> ℝ := λ x => x/2
 
+theorem f_def : f x = x+1 := by rfl
+theorem f'_def : f' x = x-1 := by rfl
+theorem g_def : g x = 2*x := by rfl
+theorem g'_def : g' x = x/2 := by rfl
+
 theorem iter_f : f^[n] = (λ (x : ℝ) => x+n) := by
   induction n with
   | zero =>
@@ -62,6 +67,19 @@ theorem comp_fg (n m : ℕ) : f^[n] ∘ g^[m] = λ (x : ℝ) => 2^m*x+n := by
 
 theorem comp_gf (n m : ℕ) : g^[m] ∘ f^[n] = λ (x : ℝ) => 2^m*(x+n) := by
   rw [iter_f, iter_g, Function.comp_def]
+
+--------------------------------------------------------------------------------
+
+example : g' ∘ f^[3] ∘ g = (λ (x : ℝ) => x + 3/2) := by
+  rw [<- Function.iterate_one g', <- Function.iterate_one g]
+  rw [comp_fg]
+  simp
+  rw [Function.comp_def]
+  conv =>
+    lhs
+    intro x
+    rw [g'_def, add_div, mul_comm, div_eq_mul_inv]
+    simp
 
 --------------------------------------------------------------------------------
 
