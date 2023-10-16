@@ -1,6 +1,9 @@
 import Mathlib.Algebra.Group.Defs
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Finset.Basic
+import Mathlib.GroupTheory.PresentedGroup
+--------------------------------------------------------------------------------
+namespace HoldenP8
 --------------------------------------------------------------------------------
 
 def f : ℝ -> ℝ := λ x => x+1
@@ -62,9 +65,35 @@ theorem comp_gf (n m : ℕ) : g^[m] ∘ f^[n] = λ (x : ℝ) => 2^m*(x+n) := by
 
 --------------------------------------------------------------------------------
 
-def S : Type := ({ f, f', g, g' } : Set (ℝ -> ℝ))
+def S : Type := ({ f, f', g, g', id } : Set (ℝ -> ℝ))
 
-inductive BS where
-| atom    : S -> BS
-| comp    : BS -> BS -> BS
+def BS : Type := @PresentedGroup S ∅
+
+/- inductive BS where -/
+/- | atom    : S -> BS -/
+/- | comp    : BS -> BS -> BS -/
+
+/- def npow : BS -> ℕ -> BS -/
+/- | _, Nat.zero      => BS.atom ⟨id, by simp⟩ -/ 
+/- | a, Nat.succ n    => BS.comp a (pow a n) -/
+
+/- instance : Pow BS ℕ where -/
+/-   pow := npow -/
+
+/- def inv : BS -> BS := by -/
+/-   intro a -/
+/-   cases a with -/
+/-   | atom af => -/
+/-     cases af with -/
+/-     | mk v p => -/
+/-       sorry -/
+/-   | comp g h => -/
+/-     sorry -/
+
+/- def zpow : BS -> ℤ -> BS -/
+/- | a, Int.ofNat n    => a^n -/
+/- | a, Int.negSucc n  => zpow a⁻¹ (-n) -/
+
+/- instance : Pow BS ℤ where -/
+/-   pow := zpow -/
 
